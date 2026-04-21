@@ -1,0 +1,12 @@
+{"type": "flow", "status": "running", "title": "Claude Code Mission", "objective": "Execute project task", "progress": 1}
+{"type": "agent", "agent": "orchestrator", "phase": "PROMPT", "status": "active", "task": "Reading operator request"}
+{"type": "agent", "agent": "planner", "phase": "PLAN", "status": "active", "task": "Splitting work into implementation and verification"}
+{"type": "flow", "status": "running", "progress": 20, "message": "Plan complete, build starting"}
+{"type": "agent", "agent": "builder", "phase": "BUILD", "status": "active", "task": "Implementing requested change"}
+{"type": "flow", "status": "running", "progress": 50, "message": "Core implementation in progress"}
+{"type": "agent", "agent": "reviewer", "phase": "REVIEW", "status": "active", "task": "Reviewing diff and edge cases"}
+{"type": "flow", "status": "running", "progress": 72, "message": "Review started"}
+{"type": "agent", "agent": "qa", "phase": "TEST", "status": "active", "task": "Running tests and smoke checks"}
+{"type": "flow", "status": "running", "progress": 90, "message": "Verification in progress"}
+{"type": "agent", "agent": "release", "phase": "DEPLOY", "status": "active", "task": "Preparing release handoff"}
+{"type": "flow", "status": "done", "progress": 100, "message": "Task complete"}

@@ -1,0 +1,74 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "ccc emit --from-hook SessionStart --project claude-command-central --feed /home/eladr/.claude-command-central/feeds/claude-command-central.jsonl # ccc-hook"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "ccc emit --from-hook UserPromptSubmit --project claude-command-central --feed /home/eladr/.claude-command-central/feeds/claude-command-central.jsonl # ccc-hook"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "ccc emit --from-hook PreToolUse --project claude-command-central --feed /home/eladr/.claude-command-central/feeds/claude-command-central.jsonl # ccc-hook"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "ccc emit --from-hook PostToolUse --project claude-command-central --feed /home/eladr/.claude-command-central/feeds/claude-command-central.jsonl # ccc-hook"
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "ccc emit --from-hook SubagentStart --project claude-command-central --feed /home/eladr/.claude-command-central/feeds/claude-command-central.jsonl # ccc-hook"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "ccc emit --from-hook SubagentStop --project claude-command-central --feed /home/eladr/.claude-command-central/feeds/claude-command-central.jsonl # ccc-hook"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "ccc emit --from-hook Stop --project claude-command-central --feed /home/eladr/.claude-command-central/feeds/claude-command-central.jsonl # ccc-hook"
+          }
+        ]
+      }
+    ]
+  }
+}

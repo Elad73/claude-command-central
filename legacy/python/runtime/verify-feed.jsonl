@@ -1,0 +1,42 @@
+{"type": "flow", "title": "Claude Code Command Central", "objective": "Ship terminal R&D office visualization", "status": "running", "progress": 0}
+{"type": "agent", "agent": "orchestrator", "phase": "PROMPT", "status": "active", "task": "Triaging prompt and splitting work", "message": "orchestrator moved into prompt."}
+{"type": "agent", "agent": "researcher", "phase": "PLAN", "status": "active", "task": "Mapping requirements to phases", "message": "researcher moved into plan."}
+{"type": "agent", "agent": "coder-a", "phase": "BUILD", "status": "active", "task": "Rendering office floor plan", "message": "coder-a moved into build."}
+{"type": "agent", "agent": "reviewer", "phase": "REVIEW", "status": "idle", "task": "Waiting for diff", "message": "reviewer moved into review."}
+{"type": "agent", "agent": "qa", "phase": "TEST", "status": "idle", "task": "Waiting for runnable build", "message": "qa moved into test."}
+{"type": "agent", "agent": "release", "phase": "DEPLOY", "status": "idle", "task": "Standing by", "message": "release moved into deploy."}
+{"type": "flow", "status": "running", "progress": 5, "objective": "Ship terminal R&D office visualization", "message": "Task received from operator"}
+{"type": "agent", "agent": "release", "phase": "PROMPT", "status": "active", "task": "Prompt task 1: task received from operator"}
+{"type": "agent", "agent": "researcher", "phase": "PROMPT", "status": "active", "task": "Prompt task 1: task received from operator"}
+{"type": "agent", "agent": "orchestrator", "phase": "PROMPT", "status": "active", "task": "Prompt task 1: task received from operator"}
+{"type": "flow", "status": "running", "progress": 15, "objective": "Ship terminal R&D office visualization", "message": "Orchestrator decomposed the prompt into agent tracks"}
+{"type": "agent", "agent": "release", "phase": "PLAN", "status": "active", "task": "Plan task 2: orchestrator decomposed the prompt into agent tracks"}
+{"type": "agent", "agent": "orchestrator", "phase": "PLAN", "status": "active", "task": "Plan task 2: orchestrator decomposed the prompt into agent tracks"}
+{"type": "agent", "agent": "coder-a", "phase": "PLAN", "status": "active", "task": "Plan task 2: orchestrator decomposed the prompt into agent tracks"}
+{"type": "flow", "status": "running", "progress": 28, "objective": "Ship terminal R&D office visualization", "message": "Researchers drafted workflow and event schema"}
+{"type": "agent", "agent": "qa", "phase": "BUILD", "status": "active", "task": "Build task 3: researchers drafted workflow and event schema"}
+{"type": "agent", "agent": "release", "phase": "BUILD", "status": "active", "task": "Build task 3: researchers drafted workflow and event schema"}
+{"type": "agent", "agent": "researcher", "phase": "BUILD", "status": "active", "task": "Build task 3: researchers drafted workflow and event schema"}
+{"type": "flow", "status": "running", "progress": 46, "objective": "Ship terminal R&D office visualization", "message": "Build bay is drawing the live command office"}
+{"type": "agent", "agent": "researcher", "phase": "REVIEW", "status": "active", "task": "Review task 4: build bay is drawing the live command office"}
+{"type": "agent", "agent": "reviewer", "phase": "REVIEW", "status": "active", "task": "Review task 4: build bay is drawing the live command office"}
+{"type": "agent", "agent": "qa", "phase": "REVIEW", "status": "active", "task": "Review task 4: build bay is drawing the live command office"}
+{"type": "flow", "status": "running", "progress": 63, "objective": "Ship terminal R&D office visualization", "message": "Code review started on renderer internals"}
+{"type": "agent", "agent": "coder-a", "phase": "TEST", "status": "active", "task": "Test task 5: code review started on renderer internals"}
+{"type": "agent", "agent": "researcher", "phase": "TEST", "status": "active", "task": "Test task 5: code review started on renderer internals"}
+{"type": "agent", "agent": "qa", "phase": "TEST", "status": "active", "task": "Test task 5: code review started on renderer internals"}
+{"type": "flow", "status": "running", "progress": 82, "objective": "Ship terminal R&D office visualization", "message": "QA is validating terminal resize and feed updates"}
+{"type": "agent", "agent": "reviewer", "phase": "DEPLOY", "status": "done", "task": "Deploy task 6: qa is validating terminal resize and feed updates"}
+{"type": "agent", "agent": "coder-a", "phase": "DEPLOY", "status": "done", "task": "Deploy task 6: qa is validating terminal resize and feed updates"}
+{"type": "agent", "agent": "researcher", "phase": "DEPLOY", "status": "done", "task": "Deploy task 6: qa is validating terminal resize and feed updates"}
+{"type": "flow", "status": "running", "progress": 100, "objective": "Ship terminal R&D office visualization", "message": "Deployment lane is preparing handoff instructions"}
+{"type": "agent", "agent": "qa", "phase": "DEPLOY", "status": "done", "task": "Deploy task 7: deployment lane is preparing handoff instructions"}
+{"type": "agent", "agent": "release", "phase": "DEPLOY", "status": "done", "task": "Deploy task 7: deployment lane is preparing handoff instructions"}
+{"type": "agent", "agent": "reviewer", "phase": "DEPLOY", "status": "done", "task": "Deploy task 7: deployment lane is preparing handoff instructions"}
+{"type": "flow", "status": "done", "progress": 100, "objective": "Mission complete", "message": "Task delivered to operator."}
+{"type": "agent", "agent": "orchestrator", "phase": "PROMPT", "status": "done", "task": "Awaiting next assignment"}
+{"type": "agent", "agent": "researcher", "phase": "PLAN", "status": "done", "task": "Awaiting next assignment"}
+{"type": "agent", "agent": "coder-a", "phase": "BUILD", "status": "done", "task": "Awaiting next assignment"}
+{"type": "agent", "agent": "reviewer", "phase": "REVIEW", "status": "done", "task": "Awaiting next assignment"}
+{"type": "agent", "agent": "qa", "phase": "TEST", "status": "done", "task": "Awaiting next assignment"}
+{"type": "agent", "agent": "release", "phase": "DEPLOY", "status": "done", "task": "Awaiting next assignment"}

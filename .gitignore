@@ -1,0 +1,16 @@
+node_modules/
+dist/
+coverage/
+*.log
+.DS_Store
+.env
+.env.local
+
+# Editor / OS
+.idea/
+.vscode/
+*.swp
+*~
+
+# Local runtime state (kept outside the repo but guard against accidents)
+hook-debug.jsonl
