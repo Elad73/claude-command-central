@@ -1,6 +1,7 @@
 import type { Command } from 'commander';
 import { promises as fs } from 'fs';
-import { dirname, resolve } from 'path';
+import { homedir } from 'os';
+import { dirname, join, resolve } from 'path';
 import type { DashboardEvent } from '../events/types.js';
 import {
   parseHookPayload,
@@ -111,12 +112,9 @@ export function registerEmit(program: Command): void {
           // polluting the main feed.
           if (process.env['CCC_HOOK_DEBUG']) {
             try {
-              const { promises: fs2 } = await import('fs');
-              const { homedir } = await import('os');
-              const { join, dirname: dn } = await import('path');
               const dbgPath = join(homedir(), '.claude-command-central', 'hook-debug.jsonl');
-              await fs2.mkdir(dn(dbgPath), { recursive: true });
-              await fs2.appendFile(
+              await fs.mkdir(dirname(dbgPath), { recursive: true });
+              await fs.appendFile(
                 dbgPath,
                 JSON.stringify({
                   _ts: new Date().toISOString(),

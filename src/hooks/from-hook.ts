@@ -49,6 +49,52 @@ const MAX_OBJECTIVE_LEN = 160;
 const MAX_TASK_LEN = 120;
 
 /**
+ * Scrub obvious secret shapes out of a string before it lands in the live feed.
+ *
+ * The feed is a plaintext file users may later open in a browser or screenshot, so
+ * the raw `tool_input.command` must not echo bearer tokens, API keys, or env-var
+ * assignments verbatim. The humanized bubble text already avoids most of this, but
+ * the `default:` branch of `humanizeBash` (unknown binaries) falls through to the
+ * original command — which is exactly the case where `export` / `curl` slip by.
+ *
+ * This is defense-in-depth, not a substitute for user hygiene. Patterns are
+ * intentionally broad and false-positive-biased; the feed is not a forensics trail.
+ *
+ * Never throws — on any unexpected input returns the original string so the
+ * "hooks must not fail loud" contract is preserved.
+ */
+export function redactSensitive(input: string): string {
+  try {
+    if (!input || typeof input !== 'string') return input;
+    let out = input;
+    // 1. Authorization / Bearer / Basic headers (curl -H "Authorization: Bearer xyz")
+    out = out.replace(
+      /(authorization\s*:\s*(?:bearer|basic|token)\s+)([^\s"'`]+)/gi,
+      '$1[REDACTED]',
+    );
+    // 2. Anthropic / OpenAI / Stripe style prefixed keys (sk-..., sk_live_..., pk_live_..., rk_...)
+    out = out.replace(/\b(?:sk|pk|rk)[-_][A-Za-z0-9_-]{12,}/g, '[REDACTED]');
+    // 3. GitHub tokens (ghp_, gho_, ghu_, ghs_, ghr_)
+    out = out.replace(/\bgh[pousr]_[A-Za-z0-9]{16,}/g, '[REDACTED]');
+    // 4. AWS access key IDs
+    out = out.replace(/\bAKIA[0-9A-Z]{12,}/g, '[REDACTED]');
+    // 5. Slack bot / user tokens
+    out = out.replace(/\bxox[baprs]-[A-Za-z0-9-]{10,}/g, '[REDACTED]');
+    // 6. Env-var assignments for anything that looks credential-shaped:
+    //    API_KEY=xxx, FOO_TOKEN=xxx, MY_SECRET=xxx, PASSWORD=xxx, *_PAT=xxx, *_PWD=xxx
+    //    Matches both `export KEY=val` and bare `KEY=val`. Stops at whitespace, quote, or shell separator.
+    out = out.replace(
+      /\b([A-Z][A-Z0-9_]*(?:KEY|TOKEN|SECRET|PASSWORD|PASSWD|PAT|PWD|CREDENTIAL|CREDENTIALS))\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s;|&]+))/gi,
+      '$1=[REDACTED]',
+    );
+    return out;
+  } catch {
+    // Defensive: never break the hook path on regex edge cases.
+    return input;
+  }
+}
+
+/**
  * Agents are namespaced by project so multiple concurrent sessions
  * (e.g. daily-logger + gmail-board at the same time) don't collide on
  * the single "claude" key.
@@ -181,7 +227,9 @@ const summarizeTool = (name: string | undefined, input: unknown): string => {
   if (!name) return 'working';
   const i = (input ?? {}) as Record<string, unknown>;
   if (name === 'Bash' && typeof i['command'] === 'string') {
-    return truncate(humanizeBash(i['command']), MAX_TASK_LEN);
+    // Redact BEFORE humanize so the fallback `truncate(cmd)` branch doesn't leak
+    // raw `export API_KEY=…` or `curl -H "Authorization: Bearer …"` into the feed.
+    return truncate(humanizeBash(redactSensitive(i['command'])), MAX_TASK_LEN);
   }
   if (name === 'Edit' && typeof i['file_path'] === 'string') {
     return truncate(`Editing ${shortenPath(i['file_path'])}`, MAX_TASK_LEN);
@@ -242,7 +290,8 @@ export function translateHook(
     }
 
     case 'UserPromptSubmit': {
-      const prompt = typeof payload.prompt === 'string' ? payload.prompt : '';
+      const rawPrompt = typeof payload.prompt === 'string' ? payload.prompt : '';
+      const prompt = redactSensitive(rawPrompt);
       const snippet = truncate(prompt || 'New prompt submitted', MAX_OBJECTIVE_LEN);
       return [
         {

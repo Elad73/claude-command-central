@@ -3,6 +3,7 @@ import {
   translateHook,
   phaseForTool,
   parseHookPayload,
+  redactSensitive,
 } from '../src/hooks/from-hook.js';
 
 describe('phaseForTool', () => {
@@ -187,5 +188,78 @@ describe('translateHook: project stamping', () => {
   it('stamps the project slug onto every event', () => {
     const events = translateHook('SessionStart', {}, { project: 'demo' });
     for (const e of events) expect(e.project).toBe('demo');
+  });
+});
+
+describe('redactSensitive', () => {
+  it('scrubs sk- style API keys (Anthropic / OpenAI / Stripe)', () => {
+    const out = redactSensitive('curl -H x: sk-proj-ABCDEF12345678 https://api');
+    expect(out).not.toContain('sk-proj-ABCDEF12345678');
+    expect(out).toContain('[REDACTED]');
+  });
+
+  it('scrubs Bearer tokens in Authorization headers', () => {
+    const out = redactSensitive(
+      'curl -H "Authorization: Bearer abc123.def456.ghi789" https://api',
+    );
+    expect(out).not.toContain('abc123.def456.ghi789');
+    expect(out).toContain('[REDACTED]');
+  });
+
+  it('scrubs env-var assignments that look like secrets', () => {
+    expect(redactSensitive('export API_KEY=hunter2 && npm test')).toMatch(
+      /API_KEY=\[REDACTED\]/,
+    );
+    expect(redactSensitive('GITHUB_TOKEN="ghp_short" ./deploy.sh')).toMatch(
+      /GITHUB_TOKEN=\[REDACTED\]/,
+    );
+    expect(redactSensitive('DB_PASSWORD=abc123 psql')).toMatch(
+      /DB_PASSWORD=\[REDACTED\]/,
+    );
+  });
+
+  it('scrubs GitHub and AWS tokens by prefix', () => {
+    expect(redactSensitive('token: ghp_abcdefghij0123456789')).toContain('[REDACTED]');
+    expect(redactSensitive('aws key AKIAIOSFODNN7EXAMPLE used')).toContain('[REDACTED]');
+  });
+
+  it('leaves benign command text alone', () => {
+    expect(redactSensitive('npm test')).toBe('npm test');
+    expect(redactSensitive('git status')).toBe('git status');
+  });
+
+  it('never throws on unexpected input', () => {
+    // @ts-expect-error — deliberately hostile input
+    expect(() => redactSensitive(null)).not.toThrow();
+    // @ts-expect-error
+    expect(() => redactSensitive(undefined)).not.toThrow();
+  });
+});
+
+describe('translateHook: feed redaction (PreToolUse Bash)', () => {
+  it('scrubs secrets from the raw bash command surfaced to the feed', () => {
+    const events = translateHook('PreToolUse', {
+      tool_name: 'Bash',
+      tool_input: { command: 'weirdbin --key=sk-proj-ABCDEF1234567890 do-stuff' },
+    });
+    const e = events[0];
+    expect(e?.type).toBe('agent');
+    if (e?.type === 'agent') {
+      expect(e.task).not.toContain('sk-proj-ABCDEF1234567890');
+      expect(e.task).toContain('[REDACTED]');
+    }
+  });
+
+  it('scrubs Authorization bearer tokens in curl invocations', () => {
+    const events = translateHook('PreToolUse', {
+      tool_name: 'Bash',
+      tool_input: {
+        command: 'curl -H "Authorization: Bearer s3cret.jwt.here" https://x',
+      },
+    });
+    const e = events[0];
+    if (e?.type === 'agent') {
+      expect(e.task ?? '').not.toContain('s3cret.jwt.here');
+    }
   });
 });

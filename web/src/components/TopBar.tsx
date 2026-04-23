@@ -60,11 +60,6 @@ export function TopBar({ flow, connected, sources, activeProject, inject }: Prop
               size="sm"
             />
           ))}
-          {sources.length === 0 && (
-            <span className="font-mono text-xs italic" style={{ color: '#9ca3af' }}>
-              no projects registered — run `ccc init` in a project
-            </span>
-          )}
         </div>
       )}
     </div>

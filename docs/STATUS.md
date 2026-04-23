@@ -1,10 +1,10 @@
 # Project Status
 
-Last updated: 2026-04-21
+Last updated: 2026-04-23
 
 ## Current Phase
 
-**v2 shipped and in active real-world use.** The TypeScript + Ink + React (web) dashboard tails Claude Code hook events from multiple projects simultaneously. Build is green, 98 tests pass, four projects currently wired into the registry.
+**MVP locked — preparing for public release as an open-source utility.** The TypeScript + Ink + React (web) dashboard tails Claude Code hook events from multiple projects simultaneously. Build is green, 98 tests pass, four projects currently wired into the registry, git initialized on `main`. This session is a documentation + hardening pass to make the repo clone-and-activate for other developers.
 
 ## What's running
 

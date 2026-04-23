@@ -136,6 +136,19 @@ export async function createServer(options: ServeOptions): Promise<{
     start: async () => {
       await watcher.start();
       const addr = await fastify.listen({ port: options.port, host: options.host });
+      // SECURITY: the server has no authentication. It streams the user's
+      // entire Claude Code session (prompts, file paths, bash commands) over
+      // SSE to anyone who can reach the bound address. Warn loudly if the
+      // operator binds to anything other than loopback.
+      const loopback = new Set(['127.0.0.1', 'localhost', '::1', '::ffff:127.0.0.1']);
+      if (!loopback.has(options.host)) {
+        console.warn(
+          `\n  ⚠  ccc serve is bound to ${options.host} (not loopback).\n` +
+            `     There is NO authentication on /events or /api/*.\n` +
+            `     Anyone on this network can read your Claude Code session.\n` +
+            `     Re-run with --host 127.0.0.1 unless you truly need LAN access.\n`,
+        );
+      }
       if (options.autoReload) {
         const interval = options.reloadIntervalMs ?? 5000;
         reloadTimer = setInterval(() => {

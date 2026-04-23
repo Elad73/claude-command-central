@@ -1,7 +1,7 @@
 import type { Command } from 'commander';
 import { promises as fs } from 'fs';
 import { basename, dirname, join, resolve } from 'path';
-import { configDir, feedPathFor, feedsDir, slugify } from '../config/paths.js';
+import { feedPathFor, feedsDir, registryPath, slugify } from '../config/paths.js';
 import { upsertProject } from '../config/registry.js';
 import { buildHooks, mergeHooks, type ClaudeSettings } from '../hooks/template.js';
 
@@ -58,7 +58,7 @@ export async function runInit(options: InitOptions = {}): Promise<InitResult> {
       projectDir,
       feedPath,
       settingsPath,
-      registryPath: join(configDir(), 'projects.json'),
+      registryPath: registryPath(),
       wrote: false,
     };
   }
@@ -89,7 +89,7 @@ export async function runInit(options: InitOptions = {}): Promise<InitResult> {
     projectDir,
     feedPath,
     settingsPath,
-    registryPath: join(configDir(), 'projects.json'),
+    registryPath: registryPath(),
     wrote: true,
   };
 }
@@ -105,7 +105,6 @@ export function registerInit(program: Command): void {
     .action(async (options: InitOptions) => {
       try {
         const result = await runInit(options);
-        const label = result.wrote ? 'wrote' : 'would write';
         console.log(`Project slug:   ${result.slug}`);
         console.log(`Project dir:    ${result.projectDir}`);
         console.log(`Feed path:      ${result.feedPath}`);
@@ -117,7 +116,6 @@ export function registerInit(program: Command): void {
           console.log('');
           console.log(`Next: run \`ccc watch --feed ${result.feedPath}\` in another pane.`);
         }
-        void label;
       } catch (err) {
         console.error(`ccc init: ${(err as Error).message}`);
         process.exit(1);
