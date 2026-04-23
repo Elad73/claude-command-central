@@ -36,6 +36,8 @@ See `~/.claude-command-central/projects.json`. Currently: `claude-command-centra
 - **Warm-up button** — one click runs a demo agent through every room sequentially so you can verify animations + lamp cycling without needing a real session.
 - **Hook debug sidecar** — `CCC_HOOK_DEBUG=1` env var tees raw hook payloads to `~/.claude-command-central/hook-debug.jsonl` for future investigations.
 - **Cleanup pass** — dead `Task`-tool branches removed from `PreToolUse`/`PostToolUse` (Claude Code doesn't fire those hooks for `Agent`/`Task`). Unused `chokidar` dep removed. Data entries pruned. 98/98 tests green.
+- **Stale-agent GC** — agents whose status is `done` or `idle` and whose `updatedAt` is more than 60 seconds old are automatically despawned. The exit uses the existing framer-motion exit animation. Runs client-side every 15 seconds. Applies to both subagents (finished via `SubagentStop`) and the main agent (finished via `Stop`). The server-side snapshot is pruned by the same logic so a fresh browser load never inherits ghost agents.
+- **Snapshot-on-refresh (hydration)** — a new `GET /api/snapshot` endpoint returns the full derived `DashboardState` (flow, per-project missions, current agents, recent log lines). The Fastify server maintains this state in memory through the same reducer logic the browser uses. On mount or refresh the browser fetches `/api/snapshot` first and hydrates its state, then subscribes to the SSE `/events` stream for live deltas. Eliminates the "everything is blank until a new prompt fires" experience after a page refresh.
 
 ## Open blockers / decisions
 
@@ -80,7 +82,7 @@ claude-command-central/
 │   ├── bin.ts                         # CLI entry
 │   ├── cli/                           # watch · serve · emit · demo · init
 │   ├── events/                        # types + zod + FeedReader + MultiFeedWatcher
-│   ├── state/                         # reducer + TUI state shapes
+│   ├── state/                         # reducer + TUI state shapes (dashboard-reducer.ts mirrors web/src/reducer.ts)
 │   ├── hooks/                         # Claude Code hook translator + settings template
 │   ├── app/                           # Ink TUI (ccc watch)
 │   ├── server/                        # Fastify SSE server (ccc serve)

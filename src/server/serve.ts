@@ -7,6 +7,10 @@ import { fileURLToPath } from 'url';
 import { MultiFeedWatcher, type FeedSource } from '../events/watcher.js';
 import { loadRegistry } from '../config/registry.js';
 import type { DashboardEvent } from '../events/types.js';
+import { createStateStore } from './state-store.js';
+import { pruneStale } from '../state/dashboard-reducer.js';
+
+const STALE_TTL_MS = 60_000;
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -40,7 +44,13 @@ export async function createServer(options: ServeOptions): Promise<{
 
   const watcher = new MultiFeedWatcher(options.sources, { pollMs: 150 });
   const sseClients = new Set<(event: DashboardEvent) => void>();
+  const store = createStateStore();
   watcher.onEvent((event) => {
+    // Apply to the store BEFORE fanning out to SSE clients so a client hitting
+    // /api/snapshot mid-burst sees a state at least as fresh as what it will
+    // receive over SSE. The reducer is idempotent for agent/flow updates, and
+    // the log buffer is bounded so any rare duplication is harmless.
+    store.apply(event);
     for (const send of sseClients) send(event);
   });
 
@@ -90,6 +100,13 @@ export async function createServer(options: ServeOptions): Promise<{
   fastify.get('/api/sources', async () => ({
     sources: watcher.sources,
   }));
+
+  // /api/snapshot — current dashboard state, with stale agents (done/idle past
+  // TTL) pruned view-only for hydration. Lets a refreshed browser pick up the
+  // live office without waiting on the next event.
+  fastify.get('/api/snapshot', async () =>
+    pruneStale(store.get(), Date.now(), STALE_TTL_MS),
+  );
 
   // Static web app (only if webRoot is provided and exists)
   const webRoot = options.webRoot ?? join(__dirname, 'web');

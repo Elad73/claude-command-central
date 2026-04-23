@@ -106,7 +106,7 @@ Claude Code session
  http://localhost:7777  (Vite + React + framer-motion web dashboard)
 ```
 
-The dashboard is read-only with respect to the project. The hook is the only write path, and it only writes to the CCC feed file, never to project source.
+The dashboard is read-only with respect to the project. The hook is the only write path, and it only writes to the CCC feed file, never to project source. On mount (and on every page refresh), the browser fetches `GET /api/snapshot` to hydrate the full current state before subscribing to the SSE stream, so the office is populated immediately rather than waiting for the next event.
 
 Alternatively, `ccc watch` renders the same data as an Ink TUI directly in your terminal without a browser.
 
@@ -268,6 +268,10 @@ For web hot-reload during development, run `npm run dev:web` separately and poin
 **"I only see one agent in the dashboard"**
 
 Subagent cards come in via `SubagentStart`, which is a newer hook. Re-run `ccc init` in the project, then restart the Claude Code session — the updated settings take effect on the next session.
+
+**"The dashboard is blank after I reload the page"**
+
+The dashboard hydrates from a `/api/snapshot` endpoint on mount, so a normal browser refresh restores the full current state immediately — no new prompt is needed. If it still appears blank, confirm `ccc serve` is running and that at least one event has been emitted in the current session.
 
 **"The dashboard is blank after I rebuild"**
 

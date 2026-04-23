@@ -24,6 +24,10 @@ The repo wires four specialist subagent pointers in `.claude/agents/`. When Clau
 
 Visual / design work on `web/src/` is owned by the **`ui-designer`** plugin subagent (available globally in the user's Claude install; not re-exported here). Invoke it for palette shifts, scene polish, motion tweaks, or any "this feels ordinary" feedback.
 
+## Keeping the server-side reducer in sync
+
+`src/state/dashboard-reducer.ts` is a deliberate server-side duplicate of `web/src/reducer.ts`. The server uses it to maintain a derived `DashboardState` in memory so that `GET /api/snapshot` can return the full current picture to a freshly loaded browser. Because both copies consume the same event types and produce the same state shape, they must be kept in sync: any change to the event schema or the `DashboardState` shape requires updating both files together. When the shapes change, `.claude/skills/ccc-hook-wiring/SKILL.md` is the canonical reference for what the event schema implies and the right place to record the extension contract.
+
 ## Code conventions
 
 - **TypeScript strict.** `strict: true` + `noUncheckedIndexedAccess: true`. Both are non-negotiable.

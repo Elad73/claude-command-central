@@ -8,7 +8,7 @@ CCC sits between three trust boundaries:
 
 1. **Feed content.** Claude Code hook payloads contain raw user input: submitted prompts, file paths, and every bash command Claude executes. These can incidentally include secrets (exported env vars, `curl -H "Authorization: …"`, `sk-…` keys). CCC writes this stream to a JSONL file and renders it to the screen.
 2. **Hook invocation.** `ccc emit --from-hook` is invoked by Claude Code on every tool call. If it crashes, the user's Claude session fails loudly. The translator must tolerate garbage input and always exit 0.
-3. **Server exposure.** `ccc serve` starts an unauthenticated HTTP/SSE server. Bound to loopback it is low-risk; bound to `0.0.0.0` it exposes the user's entire session to the LAN.
+3. **Server exposure.** `ccc serve` starts an unauthenticated HTTP/SSE server. Bound to loopback it is low-risk; bound to `0.0.0.0` it exposes the user's entire session to the LAN. The `GET /api/snapshot` endpoint returns the same derived `DashboardState` that the SSE stream already carries — prompts, file paths, bash commands — so it inherits the same exposure posture: loopback-only by default, and the `--host` warning applies equally.
 
 ## In scope
 

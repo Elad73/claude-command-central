@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { DashboardEvent, DashboardState, FeedSource } from '../types';
 import { initialDashboardState } from '../types';
 import { reduce } from '../reducer';
@@ -6,6 +6,10 @@ import { reduce } from '../reducer';
 export interface StreamStatus {
   connected: boolean;
 }
+
+/** Stale-agent GC: how often we sweep, and how old a done/idle agent can get. */
+const GC_INTERVAL_MS = 15_000;
+const STALE_TTL_MS = 60_000;
 
 export function useEventStream(url: string = '/events'): {
   state: DashboardState;
@@ -16,6 +20,10 @@ export function useEventStream(url: string = '/events'): {
   const [state, setState] = useState<DashboardState>(() => initialDashboardState());
   const [status, setStatus] = useState<StreamStatus>({ connected: false });
   const [sources, setSources] = useState<FeedSource[]>([]);
+  // `hydratedRef` prevents the snapshot fetch (or retries of it under React
+  // StrictMode double-invoke) from clobbering SSE events that may have landed
+  // before the fetch settled.
+  const hydratedRef = useRef(false);
 
   useEffect(() => {
     let closed = false;
@@ -39,33 +47,88 @@ export function useEventStream(url: string = '/events'): {
 
   useEffect(() => {
     let closed = false;
-    const source = new EventSource(url);
+    let source: EventSource | null = null;
 
-    source.addEventListener('open', () => {
-      if (!closed) setStatus({ connected: true });
-    });
-
-    source.addEventListener('error', () => {
-      if (!closed) setStatus({ connected: false });
-    });
-
-    source.addEventListener('message', (ev: MessageEvent) => {
-      if (closed) return;
-      try {
-        const event = JSON.parse(ev.data) as DashboardEvent;
-        setState((prev) => reduce(prev, event));
-        // If any message arrives, we're definitely connected.
-        setStatus((prev) => (prev.connected ? prev : { connected: true }));
-      } catch {
-        // Malformed payload — ignore
+    const start = async () => {
+      // Hydrate from the server snapshot first so a page refresh shows the
+      // live office immediately instead of waiting for the next event.
+      if (!hydratedRef.current) {
+        try {
+          const res = await fetch('/api/snapshot');
+          if (res.ok) {
+            const snapshot = (await res.json()) as DashboardState;
+            if (!closed) {
+              setState(snapshot);
+              hydratedRef.current = true;
+            }
+          }
+        } catch (err) {
+          // Server briefly unreachable — fall back to empty state + SSE rebuild.
+          // eslint-disable-next-line no-console
+          console.warn('[ccc] snapshot hydration failed — will rebuild from SSE', err);
+        }
       }
-    });
+
+      if (closed) return;
+      source = new EventSource(url);
+
+      source.addEventListener('open', () => {
+        if (!closed) setStatus({ connected: true });
+      });
+
+      source.addEventListener('error', () => {
+        if (!closed) setStatus({ connected: false });
+      });
+
+      source.addEventListener('message', (ev: MessageEvent) => {
+        if (closed) return;
+        try {
+          const event = JSON.parse(ev.data) as DashboardEvent;
+          setState((prev) => reduce(prev, event));
+          setStatus((prev) => (prev.connected ? prev : { connected: true }));
+        } catch {
+          // Malformed payload — ignore
+        }
+      });
+    };
+
+    void start();
 
     return () => {
       closed = true;
-      source.close();
+      if (source) source.close();
     };
   }, [url]);
+
+  // Stale-agent garbage collector. Synthesizes `despawn` events for agents
+  // that have been done/idle long enough; the reducer already handles the
+  // opcode and AnimatePresence on the agent card handles the exit animation.
+  useEffect(() => {
+    const tick = () => {
+      const now = Date.now();
+      setState((prev) => {
+        const victims: Array<{ project: string; rawName: string }> = [];
+        for (const agent of Object.values(prev.agents)) {
+          const stale =
+            (agent.status === 'done' || agent.status === 'idle') &&
+            now - agent.updatedAt > STALE_TTL_MS;
+          if (stale) victims.push({ project: agent.project, rawName: agent.rawName });
+        }
+        if (victims.length === 0) return prev;
+        let next = prev;
+        for (const v of victims) {
+          next = reduce(
+            next,
+            { type: 'agent', agent: v.rawName, project: v.project, status: 'despawn' },
+            now,
+          );
+        }
+        return next;
+      });
+    };
+    const id = setInterval(tick, GC_INTERVAL_MS);
+    return () => clearInterval(id);
+  }, []);
 
   const inject = useCallback((event: DashboardEvent) => {
     setState((prev) => reduce(prev, event));

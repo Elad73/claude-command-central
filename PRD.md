@@ -75,7 +75,7 @@ The office is a 2x3 grid of rooms. Each room corresponds to a workflow phase. Ag
 | QA Lab | TEST | Agents perform a stunt fall from a ceiling hatch into a safety-cushion stack, sprawl, stand, and give a thumbs-up. |
 | Deploy | DEPLOY | A launch pad fires a parabolic rocket arc to a pulsing star; the delivery box is offloaded, the rocket returns, the stack grows. |
 
-Each room has four corner occupancy lamps. A lamp lights when at least one live (non-done, non-idle) agent is in the room. Lamps fade when the room is empty or contains only resting agents. Agents in a `done` or `idle` state drop their glow, reduce opacity, and stop all animation loops so finished work reads as clearly inactive.
+Each room has four corner occupancy lamps. A lamp lights when at least one live (non-done, non-idle) agent is in the room. Lamps fade when the room is empty or contains only resting agents. Agents in a `done` or `idle` state drop their glow, reduce opacity, and stop all animation loops so finished work reads as clearly inactive. Agents that remain in `done` or `idle` for more than 60 seconds are automatically removed from the office: their card exits via the standard framer-motion exit animation and is then garbage-collected from state. This runs client-side every 15 seconds; the same pruning is applied to the server-side snapshot so stale agents never reappear after a refresh.
 
 ---
 
@@ -206,3 +206,5 @@ These rules emerged from building and operating the product; they are not aspira
 **Agent activity state must be visually unambiguous.** A done agent must not look like an active one. Glow, opacity, and animation loops are all stripped from agents in `done` or `idle` status. Ambiguity about whether work is still happening is the core problem the product exists to solve; the UI cannot introduce the same ambiguity it is supposed to eliminate.
 
 **Rooms must read as live or dormant at a glance.** Occupancy lamps exist precisely so a viewer does not need to read agent names to know whether a room has active work. Lamp state tracks live agents only; resting agents do not keep a room lit.
+
+**State must survive a page refresh.** A dashboard that goes blank when the user refreshes is unreliable in practice. The server maintains a derived `DashboardState` in memory and exposes it via `GET /api/snapshot`. On mount, the browser hydrates from that snapshot before subscribing to the SSE stream, so the full picture is present from the first render regardless of when the last event arrived.
