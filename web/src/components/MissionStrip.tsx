@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import type { AgentState, ProjectMission } from '../types';
 import { projectColor, projectShortCode } from './ProjectChip';
@@ -11,9 +12,9 @@ interface Props {
 /**
  * Shows each project's *mission* (the prompt the team is working on) as its
  * own card. Agent bubbles stay tactical (current tool call); this strip
- * answers "what are they trying to accomplish?" at a glance. One card per
- * active project, colored + labeled with its short code. Hover a card to
- * reveal the full mission text and team-size breakdown.
+ * answers "what are they trying to accomplish?" at a glance. Hover a card to
+ * reveal the full mission text — the detail popover renders via a portal to
+ * `document.body` so it always paints above the Room stacking contexts below.
  */
 export function MissionStrip({ missions, agents }: Props) {
   const all = Object.values(missions)
@@ -30,13 +31,7 @@ export function MissionStrip({ missions, agents }: Props) {
   }
 
   return (
-    <div
-      // `overflow-visible` (default) is important so the hover popover isn't
-      // clipped. We wrap to new rows rather than horizontally scroll so the
-      // popover is never cut off by a scroll container.
-      className="flex items-stretch gap-2 flex-wrap pb-1"
-      style={{ position: 'relative' }}
-    >
+    <div className="flex items-stretch gap-2 flex-wrap pb-1">
       {all.map((m) => {
         const counts = activeByProject.get(m.project) ?? { total: 0, live: 0 };
         return <MissionCard key={m.project} mission={m} counts={counts} />;
@@ -56,13 +51,20 @@ function MissionCard({
   const code = projectShortCode(mission.project);
   const done = mission.status === 'done';
   const running = counts.live > 0;
-  const [hover, setHover] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [anchor, setAnchor] = useState<DOMRect | null>(null);
+
+  const openPopover = () => {
+    if (cardRef.current) setAnchor(cardRef.current.getBoundingClientRect());
+  };
+  const closePopover = () => setAnchor(null);
 
   return (
     <div
+      ref={cardRef}
       className="relative flex items-center gap-3 rounded-md border backdrop-blur-sm min-w-0"
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
+      onMouseEnter={openPopover}
+      onMouseLeave={closePopover}
       style={{
         padding: '6px 12px',
         background: done ? `${color}08` : `${color}18`,
@@ -108,58 +110,88 @@ function MissionCard({
             </span>
           )}
         </div>
-        <div
-          className="font-mono text-xs truncate"
-          style={{ color: '#e5e7ff' }}
-          // Native tooltip intentionally suppressed — the hover popover below
-          // is the richer replacement.
-        >
+        <div className="font-mono text-xs truncate" style={{ color: '#e5e7ff' }}>
           {mission.objective}
         </div>
       </div>
 
-      <AnimatePresence>
-        {hover && <MissionDetail mission={mission} counts={counts} color={color} />}
-      </AnimatePresence>
+      {/* Portal so the popover paints above room stacking contexts.
+          `document` is guarded so SSR (if ever) doesn't break. */}
+      {typeof document !== 'undefined' &&
+        createPortal(
+          <AnimatePresence>
+            {anchor && (
+              <MissionDetail
+                mission={mission}
+                counts={counts}
+                color={color}
+                anchor={anchor}
+              />
+            )}
+          </AnimatePresence>,
+          document.body,
+        )}
     </div>
   );
 }
 
 /**
- * Full-mission hover popover. Shows the entire objective text (no truncation)
- * plus a metadata footer so the viewer gets the whole picture without leaving
- * the dashboard.
+ * Full-mission hover popover, portaled to `document.body` so it escapes any
+ * local stacking context. Positioned with `position: fixed` using the anchor
+ * card's bounding rect; horizontally clamped to the viewport so it doesn't
+ * overflow the right edge when a card sits near the window edge.
  */
 function MissionDetail({
   mission,
   counts,
   color,
+  anchor,
 }: {
   mission: ProjectMission;
   counts: { total: number; live: number };
   color: string;
+  anchor: DOMRect;
 }) {
+  const POPOVER_WIDTH = 440;
+  const MARGIN = 12;
+  const viewportW = typeof window !== 'undefined' ? window.innerWidth : 1920;
+  // Clamp: never overflow the right edge, never go below the left edge.
+  const left = Math.min(
+    Math.max(MARGIN, anchor.left),
+    viewportW - POPOVER_WIDTH - MARGIN,
+  );
+  const top = anchor.bottom + 8;
+
+  // Arrow position: where the card's left edge originally was, relative to the
+  // popover's own left after clamping.
+  const arrowLeft = Math.min(
+    Math.max(16, anchor.left + 20 - left),
+    POPOVER_WIDTH - 24,
+  );
+
   return (
     <motion.div
       initial={{ opacity: 0, y: -4, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -4, scale: 0.98 }}
       transition={{ duration: 0.14, ease: 'easeOut' }}
-      className="absolute z-50 pointer-events-none"
+      className="pointer-events-none"
       style={{
-        top: 'calc(100% + 8px)',
-        left: 0,
-        minWidth: 320,
-        maxWidth: 520,
+        position: 'fixed',
+        top,
+        left,
+        width: POPOVER_WIDTH,
+        maxWidth: `calc(100vw - ${MARGIN * 2}px)`,
+        zIndex: 9999,
       }}
     >
       <div
-        className="rounded-md border backdrop-blur-md"
+        className="rounded-md border backdrop-blur-md relative"
         style={{
           padding: '10px 14px',
           background: 'rgba(5, 5, 13, 0.94)',
           borderColor: color,
-          boxShadow: `0 0 16px ${color}66, 0 10px 32px rgba(0,0,0,0.45), inset 0 0 10px ${color}15`,
+          boxShadow: `0 0 16px ${color}66, 0 10px 32px rgba(0,0,0,0.5), inset 0 0 10px ${color}15`,
         }}
       >
         {/* Arrow pointing up to the card */}
@@ -167,7 +199,7 @@ function MissionDetail({
           className="absolute"
           style={{
             top: -5,
-            left: 20,
+            left: arrowLeft,
             width: 10,
             height: 10,
             background: 'rgba(5, 5, 13, 0.94)',
@@ -177,7 +209,6 @@ function MissionDetail({
           }}
         />
 
-        {/* Header — full project slug, not just the code */}
         <div className="flex items-center gap-2 mb-2">
           <span
             className="font-display text-[0.65rem] tracking-[0.3em] font-bold uppercase"
@@ -188,7 +219,6 @@ function MissionDetail({
           <StatusPip status={mission.status} color={color} />
         </div>
 
-        {/* Full objective text, wrapping */}
         <div
           className="font-mono text-[0.78rem] leading-snug whitespace-pre-wrap break-words"
           style={{ color: '#f5f5ff' }}
@@ -196,7 +226,6 @@ function MissionDetail({
           {mission.objective}
         </div>
 
-        {/* Footer: team counts + progress + last-updated */}
         <div
           className="flex items-center gap-3 mt-2 pt-2 font-mono text-[0.65rem]"
           style={{
