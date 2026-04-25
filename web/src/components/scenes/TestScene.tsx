@@ -341,7 +341,7 @@ interface LaneProps {
   color: string;
   laneWidth: number;
   laneHeight: number;
-  spriteSize: 'sm' | 'md' | 'lg';
+  spriteSize: 'sm' | 'md';
 }
 
 /** One lane: ceiling + tower + cushion + animated agent. */
@@ -352,8 +352,10 @@ function Lane({ agent, index, color, laneWidth, laneHeight, spriteSize }: LanePr
   const playState: CSSProperties['animationPlayState'] = resting ? 'paused' : 'running';
 
   // Sprite dimensions (must match AgentSprite's DIMENSIONS table).
-  const spriteW = spriteSize === 'lg' ? 110 : spriteSize === 'md' ? 80 : 52;
-  const spriteH = spriteSize === 'lg' ? 165 : spriteSize === 'md' ? 120 : 78;
+  // Capped at `md` — the ceiling hatch + cushion stack chrome doesn't leave
+  // enough vertical room for `lg` (165 tall) without clipping the agent.
+  const spriteW = spriteSize === 'md' ? 80 : 52;
+  const spriteH = spriteSize === 'md' ? 120 : 78;
 
   // Cushion dimensions scale to lane. Keep it narrower than the lane so the
   // ladder + label have breathing room.
@@ -532,8 +534,7 @@ export function TestScene({ agents, color }: SceneProps) {
 
   // Decide sprite size from agent count — solo agent gets the big sprite,
   // 2 agents are medium, 3-4 agents go small to keep lanes readable.
-  const spriteSize: 'sm' | 'md' | 'lg' =
-    agents.length <= 1 ? 'lg' : agents.length === 2 ? 'md' : 'sm';
+  const spriteSize: 'sm' | 'md' = agents.length <= 2 ? 'md' : 'sm';
 
   return (
     <div className="absolute inset-0 pt-11 pb-10 px-2 overflow-hidden">

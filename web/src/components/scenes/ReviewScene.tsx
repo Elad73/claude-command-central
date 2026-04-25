@@ -29,10 +29,17 @@ import { isResting, type SceneProps } from './types';
 
 type StationSize = 'lg' | 'md' | 'sm';
 
-const STATION_DIMENSIONS: Record<StationSize, { w: number; h: number; spriteSize: 'md' | 'lg' }> = {
-  lg: { w: 360, h: 340, spriteSize: 'lg' },
-  md: { w: 280, h: 270, spriteSize: 'md' },
-  sm: { w: 240, h: 230, spriteSize: 'md' },
+// Station sizing:
+//   - The room content area is ~220-260px tall after pt-11 / pb-10 reserves.
+//   - The chair, blanket, hat, magnifier, and pipe overlays all stack on top
+//     of the sprite so the station heights stay below the room height.
+//   - Sprite caps at `md` (120 tall) even in the largest station; an `lg`
+//     sprite (165 tall) plus the chair scene's overlays clip the hat off the
+//     top of the room. Use the wider station to give the chair room instead.
+const STATION_DIMENSIONS: Record<StationSize, { w: number; h: number; spriteSize: 'md' | 'sm' }> = {
+  lg: { w: 320, h: 240, spriteSize: 'md' },
+  md: { w: 260, h: 220, spriteSize: 'md' },
+  sm: { w: 220, h: 200, spriteSize: 'sm' },
 };
 
 export function ReviewScene({ agents, color }: SceneProps) {
@@ -403,7 +410,7 @@ interface SeatedAgentProps {
   height: number;
   agent: AgentState;
   agentColor: string;
-  spriteSize: 'md' | 'lg';
+  spriteSize: 'sm' | 'md';
   loopState: CSSProperties['animationPlayState'];
   outlineColor: string;
 }
@@ -420,7 +427,7 @@ function SeatedAgent({
   // Position the sprite so the chair (zIndex 3) covers the lower half.
   // Sprite zIndex 2 → chair at 3 is IN FRONT of the lower legs.
   // Hat/magnifier/pipe zIndex 5 → on top of the chair in front of the torso.
-  const spriteDims = spriteSize === 'lg' ? { w: 110, h: 165 } : { w: 80, h: 120 };
+  const spriteDims = spriteSize === 'md' ? { w: 80, h: 120 } : { w: 52, h: 78 };
   const spriteLeft = width * 0.5 - spriteDims.w / 2;
   // Bottom-align sprite so its waist falls behind the chair seat line.
   const spriteTop = height * 0.14;

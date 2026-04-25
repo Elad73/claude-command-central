@@ -77,7 +77,11 @@ export function BuildScene({ agents, color }: SceneProps) {
               const tool = pickTool(agent.key);
               const resting = isResting(agent.status);
               const agentColor = projectColor(agent.project);
-              const size: 'md' | 'lg' = stations.length <= 1 ? 'lg' : 'md';
+              // The 78px tool rack at the top + station chrome below leaves
+              // ~150px for the sprite. `lg` (165 tall) clips the head; cap at
+              // `md` for 1-2 agents and shrink to `sm` when the bay fills up
+              // so 4 agents stay shoulder-to-shoulder without overflow.
+              const size: 'sm' | 'md' = stations.length <= 2 ? 'md' : 'sm';
               return (
                 <motion.div
                   key={agent.key}
@@ -319,14 +323,14 @@ interface StationChromeProps {
   tool: ToolId;
   color: string;
   resting: boolean;
-  size: 'md' | 'lg';
+  size: 'sm' | 'md';
   children: ReactNode;
 }
 
 function Station({ tool, color, resting, size, children }: StationChromeProps) {
   // Slightly taller layout for the larger (single-agent) size so the tool
   // + target still fit cleanly below the sprite.
-  const stationWidth = size === 'lg' ? 220 : 150;
+  const stationWidth = size === 'md' ? 150 : 110;
   const playState: CSSProperties['animationPlayState'] = resting ? 'paused' : 'running';
 
   return (
@@ -358,15 +362,15 @@ function Station({ tool, color, resting, size, children }: StationChromeProps) {
 interface ToolProps {
   tool: ToolId;
   color: string;
-  size: 'md' | 'lg';
+  size: 'sm' | 'md';
   playState: CSSProperties['animationPlayState'];
 }
 
 function ToolInHand({ tool, color, playState, size }: ToolProps) {
   // The sprite's right hand sits at roughly (94, 130) in its 120×180 viewBox,
   // which means roughly 78% across and 72% down of its rendered box.
-  const spriteW = size === 'lg' ? 110 : 80;
-  const spriteH = size === 'lg' ? 165 : 120;
+  const spriteW = size === 'md' ? 80 : 52;
+  const spriteH = size === 'md' ? 120 : 78;
 
   // Common hand position relative to the sprite container.
   const handX = spriteW * 0.78;
@@ -496,11 +500,11 @@ interface TargetProps {
   tool: ToolId;
   color: string;
   playState: CSSProperties['animationPlayState'];
-  size: 'md' | 'lg';
+  size: 'sm' | 'md';
 }
 
 function Target({ tool, color, playState, size }: TargetProps) {
-  const width = size === 'lg' ? 220 : 150;
+  const width = size === 'md' ? 150 : 110;
 
   if (tool === 'hammer') {
     // Plank on two sawhorses with a nail sticking up, jittering down per strike.
