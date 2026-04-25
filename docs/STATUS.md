@@ -1,10 +1,10 @@
 # Project Status
 
-Last updated: 2026-04-23
+Last updated: 2026-04-25
 
 ## Current Phase
 
-**MVP locked — preparing for public release as an open-source utility.** The TypeScript + Ink + React (web) dashboard tails Claude Code hook events from multiple projects simultaneously. Build is green, 98 tests pass, four projects currently wired into the registry, git initialized on `main`. This session is a documentation + hardening pass to make the repo clone-and-activate for other developers.
+**MVP shipped — tagged `v0.1.0` on private GitHub repo `Elad73/claude-command-central`.** The TypeScript + Ink + React (web) dashboard tails Claude Code hook events from multiple projects simultaneously. Build is green, **131 tests pass**, four projects currently wired into the registry. Repo is clone-and-activate ready: README, LICENSE, PRD, SECURITY, CONTRIBUTING all in place, project-level skills + agent pointers + slash commands ship in `.claude/`.
 
 ## What's running
 
@@ -38,6 +38,12 @@ See `~/.claude-command-central/projects.json`. Currently: `claude-command-centra
 - **Cleanup pass** — dead `Task`-tool branches removed from `PreToolUse`/`PostToolUse` (Claude Code doesn't fire those hooks for `Agent`/`Task`). Unused `chokidar` dep removed. Data entries pruned. 98/98 tests green.
 - **Stale-agent GC** — agents whose status is `done` or `idle` and whose `updatedAt` is more than 60 seconds old are automatically despawned. The exit uses the existing framer-motion exit animation. Runs client-side every 15 seconds. Applies to both subagents (finished via `SubagentStop`) and the main agent (finished via `Stop`). The server-side snapshot is pruned by the same logic so a fresh browser load never inherits ghost agents.
 - **Snapshot-on-refresh (hydration)** — a new `GET /api/snapshot` endpoint returns the full derived `DashboardState` (flow, per-project missions, current agents, recent log lines). The Fastify server maintains this state in memory through the same reducer logic the browser uses. On mount or refresh the browser fetches `/api/snapshot` first and hydrates its state, then subscribes to the SSE `/events` stream for live deltas. Eliminates the "everything is blank until a new prompt fires" experience after a page refresh.
+- **Mission hover popover** — full-mission detail card on hover, rendered via a React portal to `document.body` so it paints above Room stacking contexts (which were occluding the in-flow tooltip). Shows full project slug, complete objective text, status pip, team count, progress %, and a relative-time stamp.
+- **Mission completion signal** — completed missions persist on the strip with a green ✓ badge, **DONE** pill, and a footer line `✓ duration · agents · actions`. Sorted running-first then by `completedAt` desc, capped at 8 visible. Running→done transition fires a one-shot celebration: scale spring + portaled particle burst + diagonal sheen sweep across the card. Snapshot hydration seeds the celebrated set so the burst doesn't replay on refresh.
+- **TopBar aggregate state** — replaces the single-flow status field with `ALL CLEAR · N complete` when nothing is running, or `X running · Y done` otherwise. Lets a returning user read the whole picture from the chrome.
+- **Mission lifecycle tracking** — `ProjectMission` now carries `startedAt`, `completedAt?`, and `actionCount`. The reducer latches `startedAt` on first running event, `completedAt` on the running→done transition (never overwritten), and increments `actionCount` for every project-tagged event. A new running event after done resets the lifecycle. Mirrored on the server-side reducer; snapshot-parity invariant preserved (round-trip JSON test still green).
+- **Project-level slash commands** — four imported and adapted from `expense-tracker`: `/feature`, `/bug-fix`, `/wake-up`, `/wrap-up`. Each routes work to the project-local skills (`ccc-parallel-fanout`, `ccc-hook-wiring`, `ccc-scene-architecture`) and delegate-pointer agents. Six FinPilot-specific commands intentionally not imported (named-agent pipeline + GitHub-label task tracker — scaffolding CCC doesn't have).
+- **Public release prep** — repo published privately to `Elad73/claude-command-central` on GitHub. History rewritten to use personal identity (`Elad73 <elad.ron.g@gmail.com>`) on all commits. Tagged `v0.1.0` as MVP-ready release.
 
 ## Open blockers / decisions
 
@@ -64,7 +70,7 @@ ccc serve                                              # web dashboard on :7777
 ccc watch --feed ~/.claude-command-central/feeds/your-project.jsonl   # Ink TUI
 ```
 
-- Tests: 98 across 11 files (`npm test`)
+- Tests: 131 across 14 files (`npm test`)
 - Build: tsup + vite → `dist/` + `web/dist/` → copied to `dist/web/` for bundled serve
 - CLI entry: `dist/bin.js`
 - Config override: `CCC_CONFIG_DIR=/custom/path`
