@@ -83,6 +83,12 @@ export interface ProjectMission {
   status: string;
   progress: number;
   updatedAt: number;
+  /** When this mission first transitioned to running. 0 until the first `running` flow event. */
+  startedAt: number;
+  /** When the mission flipped to `done`. Set on the transition; never overwritten while still done. */
+  completedAt?: number;
+  /** Total events emitted by this project this lifecycle (resets on a fresh run). */
+  actionCount: number;
 }
 
 export interface DashboardState {
@@ -113,6 +119,17 @@ export const initialDashboardState = (): DashboardState => ({
   latestProject: null,
   lastEventAt: 0,
   missions: {},
+});
+
+/** Default mission shape — single source of truth for new project buckets. */
+export const emptyMission = (project: string, now: number): ProjectMission => ({
+  project,
+  objective: '',
+  status: 'idle',
+  progress: 0,
+  updatedAt: now,
+  startedAt: 0,
+  actionCount: 0,
 });
 
 /** Strip `@project` or `::project` suffix to show a clean display name. */

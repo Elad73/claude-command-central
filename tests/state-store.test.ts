@@ -73,6 +73,50 @@ describe('createStateStore', () => {
     );
   });
 
+  it('mission lifecycle: startedAt latches on first running flow event', () => {
+    const store = createStateStore();
+    store.apply({ type: 'flow', project: 'p', objective: 'do thing', status: 'running' });
+    const s1 = store.get();
+    expect(s1.missions['p']?.startedAt).toBeGreaterThan(0);
+    expect(s1.missions['p']?.completedAt).toBeUndefined();
+  });
+
+  it('mission lifecycle: completedAt latches on running→done', () => {
+    const store = createStateStore();
+    store.apply({ type: 'flow', project: 'p', objective: 'ship', status: 'running' });
+    store.apply({ type: 'flow', project: 'p', status: 'done' });
+    const s = store.get();
+    expect(s.missions['p']?.completedAt).toBeGreaterThan(0);
+    const completedAt = s.missions['p']?.completedAt;
+    // A subsequent done event must not overwrite the original completedAt.
+    store.apply({ type: 'flow', project: 'p', status: 'done' });
+    expect(store.get().missions['p']?.completedAt).toBe(completedAt);
+  });
+
+  it('mission lifecycle: actionCount increments per project event', () => {
+    const store = createStateStore();
+    store.apply({ type: 'flow', project: 'p', objective: 'work', status: 'running' });
+    store.apply({ type: 'agent', project: 'p', agent: 'a', status: 'active' });
+    store.apply({ type: 'log', project: 'p', message: 'hi' });
+    expect(store.get().missions['p']?.actionCount).toBe(3);
+  });
+
+  it('mission lifecycle: a fresh running event resets the lifecycle', () => {
+    const store = createStateStore();
+    store.apply({ type: 'flow', project: 'p', objective: 'a', status: 'running' });
+    store.apply({ type: 'agent', project: 'p', agent: 'x', status: 'active' });
+    store.apply({ type: 'flow', project: 'p', status: 'done' });
+    expect(store.get().missions['p']?.completedAt).toBeDefined();
+    const firstStartedAt = store.get().missions['p']?.startedAt ?? 0;
+    // New prompt → new session for the same project.
+    store.apply({ type: 'flow', project: 'p', objective: 'b', status: 'running' });
+    const after = store.get().missions['p'];
+    expect(after?.completedAt).toBeUndefined();
+    expect(after?.startedAt).toBeGreaterThanOrEqual(firstStartedAt);
+    // actionCount was reset, then this running event itself bumped it to 1.
+    expect(after?.actionCount).toBe(1);
+  });
+
   it('pruneStale on a live store removes only the stale agent', () => {
     const store = createStateStore();
     const now = Date.now();

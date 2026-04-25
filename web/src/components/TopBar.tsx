@@ -1,16 +1,41 @@
-import { useState } from 'react';
-import type { FeedSource, FlowState, DashboardEvent } from '../types';
+import { useMemo, useState } from 'react';
+import type { FeedSource, FlowState, DashboardEvent, ProjectMission } from '../types';
 import { ProjectChip } from './ProjectChip';
 
 interface Props {
   flow: FlowState;
+  missions: Record<string, ProjectMission>;
   connected: boolean;
   sources: FeedSource[];
   activeProject: string | null;
   inject: (event: DashboardEvent) => void;
 }
 
-export function TopBar({ flow, connected, sources, activeProject, inject }: Props) {
+export function TopBar({
+  flow,
+  missions,
+  connected,
+  sources,
+  activeProject,
+  inject,
+}: Props) {
+  // Aggregate mission counts. A returning user reads this single badge to
+  // answer "is anything still running?" before drilling into the strip.
+  // Missions with no objective yet (project bucket created by a stray agent
+  // event) are excluded so warm-ups & noise don't inflate the totals.
+  const aggregate = useMemo(() => {
+    let running = 0;
+    let done = 0;
+    let errored = 0;
+    for (const m of Object.values(missions)) {
+      if (!m.objective || m.objective.trim().length === 0) continue;
+      if (m.status === 'done') done += 1;
+      else if (m.status === 'error' || m.status === 'blocked') errored += 1;
+      else if (m.status === 'running' || m.status === 'active') running += 1;
+    }
+    return { running, done, errored };
+  }, [missions]);
+
   return (
     <div
       className="flex flex-col gap-2 px-4 py-3 rounded-lg border border-neon-cyan/30 bg-ink-900/70 backdrop-blur-sm"
@@ -30,7 +55,7 @@ export function TopBar({ flow, connected, sources, activeProject, inject }: Prop
         </div>
         <div className="flex items-center gap-6 text-xs uppercase tracking-widest">
           <WarmUpButton inject={inject} />
-          <StatusBadge label="status" value={flow.status} />
+          <AggregateBadge {...aggregate} />
           <ProgressBadge value={flow.progress} />
           <ConnectionDot connected={connected} />
         </div>
@@ -66,13 +91,62 @@ export function TopBar({ flow, connected, sources, activeProject, inject }: Prop
   );
 }
 
-function StatusBadge({ label, value }: { label: string; value: string }) {
+/**
+ * Aggregate cross-project status. Three modes:
+ *   • errored ≥ 1 → pink, surfaces the failure first
+ *   • running ≥ 1 → green, shows {X} running · {Y} done
+ *   • else        → cyan checkmark "ALL CLEAR · {N} mission(s) complete"
+ *                   (or the dim idle hint if nothing has happened yet)
+ */
+function AggregateBadge({
+  running,
+  done,
+  errored,
+}: {
+  running: number;
+  done: number;
+  errored: number;
+}) {
+  const total = running + done + errored;
+  let color = '#00f5ff';
+  let label: string;
+  let icon: string | null = null;
+
+  if (errored > 0) {
+    color = '#ff1e6b';
+    label = `${errored} error · ${running} running · ${done} done`;
+    icon = '!';
+  } else if (running > 0) {
+    color = '#39ff14';
+    label = `${running} running · ${done} done`;
+  } else if (total > 0) {
+    color = '#39ff14';
+    icon = '✓';
+    label = `ALL CLEAR · ${done} mission${done === 1 ? '' : 's'} complete`;
+  } else {
+    color = '#9ca3af';
+    label = 'idle';
+  }
+
   return (
-    <div className="flex items-center gap-2">
-      <span style={{ color: '#9ca3af' }}>{label}</span>
-      <span className="font-bold" style={{ color: statusColor(value) }}>
-        {value}
-      </span>
+    <div
+      className="flex items-center gap-2 font-display tracking-widest font-bold"
+      title="aggregate mission status"
+      style={{ color }}
+    >
+      {icon && (
+        <span
+          aria-hidden
+          style={{
+            fontSize: 14,
+            lineHeight: 1,
+            textShadow: `0 0 6px ${color}, 0 0 14px ${color}88`,
+          }}
+        >
+          {icon}
+        </span>
+      )}
+      <span style={{ textShadow: `0 0 6px ${color}66` }}>{label}</span>
     </div>
   );
 }
@@ -120,21 +194,6 @@ function ConnectionDot({ connected }: { connected: boolean }) {
       </span>
     </div>
   );
-}
-
-function statusColor(status: string): string {
-  switch (status) {
-    case 'running':
-    case 'active':
-      return '#39ff14';
-    case 'done':
-      return '#00f5ff';
-    case 'blocked':
-    case 'error':
-      return '#ff1e6b';
-    default:
-      return '#d4d4d8';
-  }
 }
 
 /**

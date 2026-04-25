@@ -46,6 +46,7 @@ export function App() {
       <div className="relative z-10 h-full flex flex-col p-4 gap-3">
         <TopBar
           flow={state.flow}
+          missions={state.missions}
           connected={status.connected}
           sources={sources}
           activeProject={state.latestProject}
