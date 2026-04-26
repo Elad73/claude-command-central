@@ -1,6 +1,26 @@
 # Project Status
 
-Last updated: 2026-04-25
+Last updated: 2026-04-26
+
+## ⚓ Rollback baseline — `v0.1.1`
+
+**If anything breaks, this is the proven good state. One command to recover:**
+
+```bash
+git reset --hard v0.1.1
+git push -f origin main   # private repo, force push is safe
+```
+
+`v0.1.1` is the post-MVP, pre-animation-revamp checkpoint. Includes everything:
+mission strip + hover popover, snapshot-on-refresh, stale-agent GC, mission
+completion celebration, sprite size caps, project-level slash commands. SVG
+humanoid renders correctly in all six rooms. Tests 131/131. Build clean.
+
+The Rive integration attempt (`marty.riv`, `AgentRender`, GSAP migration of
+Intake/Strategy) was reverted on 2026-04-26 — the placeholder asset was the
+wrong aesthetic and shipped without browser-verified rendering. Lesson logged
+in `docs/ANIMATION_RESEARCH.md`. Don't ship visual changes without a real
+preview again.
 
 ## Current Phase
 
@@ -47,9 +67,36 @@ See `~/.claude-command-central/projects.json`. Currently: `claude-command-centra
 
 ## Open blockers / decisions
 
-- None. The dashboard is observing live sessions across four projects.
+- **Animation upgrade is gated on visual preview tooling.** User is installing
+  Playwright MCP so future visual work can be verified before commit. Resume
+  the humanoid revamp once that's wired up — see Next up.
 
 ## Next up
+
+### 🎨 Humanoid + room revamp (next session, gated on Playwright MCP)
+
+Goal: upgrade animations / drawings / humanoids / rooms / motion / transitions
+/ states by 2-3 levels. Plan is to enrich the SVG humanoid directly (no Rive,
+no asset pipeline). Three independently-shippable passes — each previewed via
+Playwright MCP screenshot before commit, each reversible to `v0.1.1`:
+
+- **Pass 1 — Humanoid sprite v2.** Status-driven visor HUD (active scan beam,
+  done checkmark, error `!`, idle dot), idle breathing, ground shadow,
+  lit-from-above gradient stack, refined armor plate seams, joint highlights.
+  Touches `web/src/components/AgentSprite.tsx` + adds a `breathing` keyframe
+  to `web/src/styles/globals.css`. Same prop contract — zero scene-file
+  changes.
+- **Pass 2 — Room atmospherics.** Perspective floor grid, ambient particles
+  per phase, soft volumetric light rays (lamp / fire / rocket exhaust),
+  parallax foreground/background.
+- **Pass 3 — Motion polish + transitions.** Hand-tuned cubic-bezier easing,
+  secondary motion (shoulders counter-rotate during arm swings), room-hop
+  echo trail, per-status rest poses (done = arms crossed, error = slumped).
+
+Verification loop per pass: baseline screenshot → write code → comparison
+screenshot → ship or iterate. No blind commits.
+
+### Other queued work
 
 - **Bounded event history ring buffer** with a replay scrubber.
 - **Per-project tab filtering** in the dashboard (currently all projects share one office).
