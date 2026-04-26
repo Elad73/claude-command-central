@@ -4,6 +4,7 @@ import type { AgentState } from '../../types';
 import { AgentSprite } from '../AgentSprite';
 import { projectColor } from '../ProjectChip';
 import { AgentLabel } from './AgentLabel';
+import { Atmosphere } from './Atmosphere';
 import { isResting, type SceneProps } from './types';
 
 /**
@@ -45,14 +46,17 @@ const STATION_DIMENSIONS: Record<StationSize, { w: number; h: number; spriteSize
 export function ReviewScene({ agents, color }: SceneProps) {
   if (agents.length === 0) {
     return (
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div
-          className="font-display tracking-[0.4em] text-sm"
-          style={{ color, opacity: 0.55, textShadow: `0 0 8px ${color}` }}
-        >
-          // CASE CLOSED //
+      <>
+        <Atmosphere phase="REVIEW" color={color} />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div
+            className="font-display tracking-[0.4em] text-sm"
+            style={{ color, opacity: 0.55, textShadow: `0 0 8px ${color}` }}
+          >
+            // CASE CLOSED //
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
@@ -73,20 +77,23 @@ export function ReviewScene({ agents, color }: SceneProps) {
   }
 
   return (
-    <div className="absolute inset-0 pt-11 pb-10 px-3 flex flex-col items-center justify-center gap-4">
-      <AnimatePresence mode="popLayout">
-        {rows.map((row, rowIdx) => (
-          <div
-            key={`row-${rowIdx}`}
-            className="flex items-end justify-center gap-5 flex-wrap"
-          >
-            {row.map((agent) => (
-              <Station key={agent.key} agent={agent} size={stationSize} color={color} />
-            ))}
-          </div>
-        ))}
-      </AnimatePresence>
-    </div>
+    <>
+      <Atmosphere phase="REVIEW" color={color} />
+      <div className="absolute inset-0 pt-11 pb-10 px-3 flex flex-col items-center justify-center gap-4">
+        <AnimatePresence mode="popLayout">
+          {rows.map((row, rowIdx) => (
+            <div
+              key={`row-${rowIdx}`}
+              className="flex items-end justify-center gap-5 flex-wrap"
+            >
+              {row.map((agent) => (
+                <Station key={agent.key} agent={agent} size={stationSize} color={color} />
+              ))}
+            </div>
+          ))}
+        </AnimatePresence>
+      </div>
+    </>
   );
 }
 

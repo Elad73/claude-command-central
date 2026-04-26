@@ -4,6 +4,7 @@ import { AgentSprite } from '../AgentSprite';
 import { projectColor } from '../ProjectChip';
 import { AgentLabel } from './AgentLabel';
 import { isResting, type SceneProps } from './types';
+import { Atmosphere } from './Atmosphere';
 
 /**
  * BUILD scene — a construction workshop.
@@ -43,7 +44,9 @@ const pickTool = (key: string): ToolId => {
 export function BuildScene({ agents, color }: SceneProps) {
   const stations = agents.slice(0, 4);
   return (
-    <div className="absolute inset-0 pt-11 pb-10 px-3 overflow-hidden">
+    <>
+      <Atmosphere phase="BUILD" color={color} />
+      <div className="absolute inset-0 pt-11 pb-10 px-3 overflow-hidden">
       {/* Back wall: tool rack (always visible) */}
       <ToolRack color={color} />
 
@@ -119,7 +122,8 @@ export function BuildScene({ agents, color }: SceneProps) {
           </AnimatePresence>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }
 

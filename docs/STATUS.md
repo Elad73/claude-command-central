@@ -67,12 +67,12 @@ See `~/.claude-command-central/projects.json`. Currently: `claude-command-centra
 
 ## Open blockers / decisions
 
-- None. Pass 1 of the humanoid revamp shipped on `feature/humanoid-sprite-v2`,
-  verified via Playwright MCP gallery + live dashboard screenshots.
+- None. Passes 1 & 2 of the humanoid + room revamp shipped on dedicated
+  feature branches, each verified via Playwright MCP screenshots.
 
 ## Next up
 
-### 🎨 Humanoid + room revamp — Pass 1 ✅, Pass 2 + 3 queued
+### 🎨 Humanoid + room revamp — Pass 1 ✅ Pass 2 ✅ Pass 3 queued
 
 Three independently-shippable passes — each previewed via Playwright MCP
 before commit, each reversible to `v0.1.1`.
@@ -87,10 +87,18 @@ before commit, each reversible to `v0.1.1`.
   - Helmet vents enriched (3 slats per side instead of 1).
   - Diagonal chest seams, reactor inner ring, helmet center crest seam.
   - Fixed pre-existing React 19 warning on right-leg `animation` shorthand.
+- **Pass 2 — Room atmospherics.** ✅ Shipped on `feature/room-atmospherics-v2`.
+  - New shared `<Atmosphere phase color />` component (web/src/components/scenes/Atmosphere.tsx).
+  - Three additive layers: perspective floor grid, volumetric light wash
+    (anchored per phase: REVIEW lower-left fireplace, STRATEGY top lamp,
+    DEPLOY upper-right star, etc.), and ambient particles tuned per phase
+    (PROMPT dust drift, PLAN thought sparks rising, BUILD welder sparks,
+    REVIEW embers, TEST bubbles, DEPLOY twinkling stars).
+  - Wired into all 6 scenes via a single new line at the top (5 of 6 scene
+    edits fanned out to parallel subagents, one file each).
+  - 5 new keyframes + 1 light-breathe loop. Pointer-events disabled on the
+    whole stack so it never blocks scene chrome.
   - Verified: 131 tests pass, typecheck clean, build green.
-- **Pass 2 — Room atmospherics.** Perspective floor grid, ambient particles
-  per phase, soft volumetric light rays (lamp / fire / rocket exhaust),
-  parallax foreground/background.
 - **Pass 3 — Motion polish + transitions.** Hand-tuned cubic-bezier easing,
   secondary motion (shoulders counter-rotate during arm swings), room-hop
   echo trail, per-status rest poses (done = arms crossed, error = slumped).
