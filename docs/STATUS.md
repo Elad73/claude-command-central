@@ -67,25 +67,27 @@ See `~/.claude-command-central/projects.json`. Currently: `claude-command-centra
 
 ## Open blockers / decisions
 
-- **Animation upgrade is gated on visual preview tooling.** User is installing
-  Playwright MCP so future visual work can be verified before commit. Resume
-  the humanoid revamp once that's wired up — see Next up.
+- None. Pass 1 of the humanoid revamp shipped on `feature/humanoid-sprite-v2`,
+  verified via Playwright MCP gallery + live dashboard screenshots.
 
 ## Next up
 
-### 🎨 Humanoid + room revamp (next session, gated on Playwright MCP)
+### 🎨 Humanoid + room revamp — Pass 1 ✅, Pass 2 + 3 queued
 
-Goal: upgrade animations / drawings / humanoids / rooms / motion / transitions
-/ states by 2-3 levels. Plan is to enrich the SVG humanoid directly (no Rive,
-no asset pipeline). Three independently-shippable passes — each previewed via
-Playwright MCP screenshot before commit, each reversible to `v0.1.1`:
+Three independently-shippable passes — each previewed via Playwright MCP
+before commit, each reversible to `v0.1.1`.
 
-- **Pass 1 — Humanoid sprite v2.** Status-driven visor HUD (active scan beam,
-  done checkmark, error `!`, idle dot), idle breathing, ground shadow,
-  lit-from-above gradient stack, refined armor plate seams, joint highlights.
-  Touches `web/src/components/AgentSprite.tsx` + adds a `breathing` keyframe
-  to `web/src/styles/globals.css`. Same prop contract — zero scene-file
-  changes.
+- **Pass 1 — Humanoid sprite v2.** ✅ Shipped on `feature/humanoid-sprite-v2`.
+  - Status-aware visor HUD: active scan beam, done check + halo, error red
+    bars + bold `!` glyph, idle pulsing center eye.
+  - Lit-from-above rim gradient on helmet, shoulders, chest, limbs, hip plate.
+  - Soft ground shadow ellipse under the boots (tighter pool when resting).
+  - Slow `sprite-breathing` scaleY on the upper-body group when resting.
+  - Joint highlight specs on shoulders, elbows, knees + boot toe rim.
+  - Helmet vents enriched (3 slats per side instead of 1).
+  - Diagonal chest seams, reactor inner ring, helmet center crest seam.
+  - Fixed pre-existing React 19 warning on right-leg `animation` shorthand.
+  - Verified: 131 tests pass, typecheck clean, build green.
 - **Pass 2 — Room atmospherics.** Perspective floor grid, ambient particles
   per phase, soft volumetric light rays (lamp / fire / rocket exhaust),
   parallax foreground/background.
