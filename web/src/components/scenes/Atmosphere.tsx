@@ -50,45 +50,45 @@ interface AtmosphereSpec {
 const SPEC: Record<Phase, AtmosphereSpec> = {
   PROMPT: {
     particles: [
-      { motion: 'drift-down', count: 14, size: 1.5, color: '#3d7bff', duration: 9 },
+      { motion: 'drift-down', count: 22, size: 2.2, color: '#3d7bff', altColor: '#5fa0ff', duration: 8 },
     ],
-    light: { x: '50%', y: '0%', tint: 'rgba(61, 123, 255, 0.18)', size: '70% 50%', opacity: 0.7 },
-    gridOpacity: 0.55,
+    light: { x: '50%', y: '0%', tint: 'rgba(61, 123, 255, 0.45)', size: '80% 60%', opacity: 1 },
+    gridOpacity: 1,
   },
   PLAN: {
     particles: [
-      { motion: 'rise', count: 12, size: 1.6, color: '#00f5ff', altColor: '#a855f7', duration: 11 },
+      { motion: 'rise', count: 20, size: 2.4, color: '#00f5ff', altColor: '#a855f7', duration: 9 },
     ],
-    light: { x: '50%', y: '20%', tint: 'rgba(0, 245, 255, 0.16)', size: '55% 60%', opacity: 0.7 },
-    gridOpacity: 0.55,
+    light: { x: '50%', y: '20%', tint: 'rgba(0, 245, 255, 0.40)', size: '70% 70%', opacity: 1 },
+    gridOpacity: 1,
   },
   BUILD: {
     particles: [
-      { motion: 'spark-fall', count: 18, size: 1.8, color: '#ffb400', altColor: '#ff8a00', duration: 4.5 },
+      { motion: 'spark-fall', count: 26, size: 2.6, color: '#ffb400', altColor: '#ff8a00', duration: 3.6 },
     ],
-    light: { x: '50%', y: '8%', tint: 'rgba(255, 180, 0, 0.20)', size: '70% 55%', opacity: 0.85 },
-    gridOpacity: 0.55,
+    light: { x: '50%', y: '8%', tint: 'rgba(255, 180, 0, 0.50)', size: '85% 65%', opacity: 1 },
+    gridOpacity: 1,
   },
   REVIEW: {
     particles: [
-      { motion: 'rise', count: 14, size: 1.6, color: '#ff8a3d', altColor: '#ff4df5', duration: 7 },
+      { motion: 'rise', count: 22, size: 2.4, color: '#ff8a3d', altColor: '#ff4df5', duration: 6 },
     ],
-    light: { x: '20%', y: '78%', tint: 'rgba(255, 120, 60, 0.30)', size: '55% 50%', opacity: 0.95 },
-    gridOpacity: 0.5,
+    light: { x: '20%', y: '78%', tint: 'rgba(255, 120, 60, 0.65)', size: '70% 65%', opacity: 1 },
+    gridOpacity: 0.95,
   },
   TEST: {
     particles: [
-      { motion: 'rise', count: 14, size: 2.0, color: '#39ff14', duration: 6 },
+      { motion: 'rise', count: 22, size: 3.0, color: '#39ff14', altColor: '#7fff5a', duration: 5 },
     ],
-    light: { x: '50%', y: '95%', tint: 'rgba(57, 255, 20, 0.18)', size: '70% 45%', opacity: 0.8 },
-    gridOpacity: 0.55,
+    light: { x: '50%', y: '95%', tint: 'rgba(57, 255, 20, 0.50)', size: '85% 55%', opacity: 1 },
+    gridOpacity: 1,
   },
   DEPLOY: {
     particles: [
-      { motion: 'twinkle', count: 16, size: 1.4, color: '#ffffff', altColor: '#ff1e6b', duration: 4 },
+      { motion: 'twinkle', count: 26, size: 2.0, color: '#ffffff', altColor: '#ff1e6b', duration: 3.5 },
     ],
-    light: { x: '78%', y: '22%', tint: 'rgba(255, 30, 107, 0.22)', size: '50% 55%', opacity: 0.85 },
-    gridOpacity: 0.6,
+    light: { x: '78%', y: '22%', tint: 'rgba(255, 30, 107, 0.55)', size: '70% 65%', opacity: 1 },
+    gridOpacity: 1.1,
   },
 };
 
@@ -147,20 +147,22 @@ const FLOOR_GRID_STYLE = (color: string, alpha: number): CSSProperties => ({
   // Two layered linear-gradients build the converging ribs + horizon stripes.
   // The wrapper is then perspective-transformed so the lines appear to recede
   // toward a vanishing point at the back wall.
+  // Stronger alpha than v0 — without this the grid just disappears against
+  // the dark backdrop. Base multipliers ~3× the original so the depth read.
   background: `
     repeating-linear-gradient(
       90deg,
       transparent 0,
       transparent 28px,
-      ${color}${Math.round(alpha * 36).toString(16).padStart(2, '0')} 28px,
-      ${color}${Math.round(alpha * 36).toString(16).padStart(2, '0')} 29px
+      ${color}${Math.min(255, Math.round(alpha * 110)).toString(16).padStart(2, '0')} 28px,
+      ${color}${Math.min(255, Math.round(alpha * 110)).toString(16).padStart(2, '0')} 29px
     ),
     repeating-linear-gradient(
       0deg,
       transparent 0,
       transparent 16px,
-      ${color}${Math.round(alpha * 26).toString(16).padStart(2, '0')} 16px,
-      ${color}${Math.round(alpha * 26).toString(16).padStart(2, '0')} 17px
+      ${color}${Math.min(255, Math.round(alpha * 80)).toString(16).padStart(2, '0')} 16px,
+      ${color}${Math.min(255, Math.round(alpha * 80)).toString(16).padStart(2, '0')} 17px
     )
   `,
   transform: 'perspective(420px) rotateX(58deg)',
