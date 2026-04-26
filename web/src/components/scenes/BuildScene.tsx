@@ -50,11 +50,13 @@ export function BuildScene({ agents, color }: SceneProps) {
       {/* Back wall: tool rack (always visible) */}
       <ToolRack color={color} />
 
-      {/* Floor line */}
+      {/* Floor line — sits right above the bottom edge, like Intake's lane
+          floor, so agent boots actually plant on the floor instead of
+          floating mid-room. */}
       <div
         className="absolute left-3 right-3"
         style={{
-          bottom: 42,
+          bottom: 10,
           height: 1,
           background: `linear-gradient(90deg, transparent, ${color}55, transparent)`,
           boxShadow: `0 0 8px ${color}55`,
@@ -73,7 +75,7 @@ export function BuildScene({ agents, color }: SceneProps) {
       ) : (
         <div
           className="absolute inset-x-0 flex items-end justify-around"
-          style={{ top: '44%', bottom: 40 }}
+          style={{ top: 80, bottom: 12 }}
         >
           <AnimatePresence mode="popLayout">
             {stations.map((agent) => {
