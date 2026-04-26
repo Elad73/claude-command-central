@@ -14,3 +14,8 @@ coverage/
 
 # Local runtime state (kept outside the repo but guard against accidents)
 hook-debug.jsonl
+
+# Playwright MCP scratch — baselines/after captures from local visual verification
+.playwright-mcp/
+baseline/
+after/
