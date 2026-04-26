@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: 2026-04-26
+Last updated: 2026-04-26 (post humanoid + room revamp merge)
 
 ## ⚓ Rollback baseline — `v0.1.1`
 
@@ -24,7 +24,16 @@ preview again.
 
 ## Current Phase
 
-**MVP shipped — tagged `v0.1.0` on private GitHub repo `Elad73/claude-command-central`.** The TypeScript + Ink + React (web) dashboard tails Claude Code hook events from multiple projects simultaneously. Build is green, **131 tests pass**, four projects currently wired into the registry. Repo is clone-and-activate ready: README, LICENSE, PRD, SECURITY, CONTRIBUTING all in place, project-level skills + agent pointers + slash commands ship in `.claude/`.
+**Humanoid + room revamp shipped — three squash commits on `main` covering
+sprite chrome, room atmospherics, and motion polish.** All work was Playwright-
+MCP-verified before commit per the lesson logged after the Rive incident.
+Tests 131/131 pass, typecheck clean, build green. Ready for `v0.2.0` tag.
+
+Background: the dashboard is a TypeScript + Ink + React (web) stack tailing
+Claude Code hook events from multiple projects simultaneously. Repo is
+clone-and-activate ready: README, LICENSE, PRD, SECURITY, CONTRIBUTING all in
+place, project-level skills + agent pointers + slash commands ship in
+`.claude/`. Four projects currently wired into the registry.
 
 ## What's running
 
@@ -64,20 +73,38 @@ See `~/.claude-command-central/projects.json`. Currently: `claude-command-centra
 - **Mission lifecycle tracking** — `ProjectMission` now carries `startedAt`, `completedAt?`, and `actionCount`. The reducer latches `startedAt` on first running event, `completedAt` on the running→done transition (never overwritten), and increments `actionCount` for every project-tagged event. A new running event after done resets the lifecycle. Mirrored on the server-side reducer; snapshot-parity invariant preserved (round-trip JSON test still green).
 - **Project-level slash commands** — four imported and adapted from `expense-tracker`: `/feature`, `/bug-fix`, `/wake-up`, `/wrap-up`. Each routes work to the project-local skills (`ccc-parallel-fanout`, `ccc-hook-wiring`, `ccc-scene-architecture`) and delegate-pointer agents. Six FinPilot-specific commands intentionally not imported (named-agent pipeline + GitHub-label task tracker — scaffolding CCC doesn't have).
 - **Public release prep** — repo published privately to `Elad73/claude-command-central` on GitHub. History rewritten to use personal identity (`Elad73 <elad.ron.g@gmail.com>`) on all commits. Tagged `v0.1.0` as MVP-ready release.
+- **Humanoid + room revamp** — three-pass visual upgrade merged into `main`
+  via squash commits. Pass 1 sprite chrome (status-aware visor HUD, rim
+  light, ground shadow, breathing, joint highlights). Pass 2 room
+  atmospherics (perspective floor grid, volumetric light wash, ambient
+  particles per phase). Pass 3 motion polish (distinct done/error rest
+  poses, walking gait with bob in INTAKE, hammer-strike head dip + shoulder
+  counter-rotate in BUILD, cubic-bezier easing across loop keyframes). All
+  three passes Playwright-MCP-verified before commit.
 
 ## Open blockers / decisions
 
-- None. All three passes of the humanoid + room revamp shipped on dedicated
-  feature branches, each verified via Playwright MCP screenshots.
+- None. All three passes of the humanoid + room revamp shipped to `main`
+  via squash commits. Ready for `v0.2.0` tag.
 
 ## Next up
 
-### 🎨 Humanoid + room revamp — Pass 1 ✅ Pass 2 ✅ Pass 3 ✅
+### Other queued work
+
+- **Bounded event history ring buffer** with a replay scrubber.
+- **Per-project tab filtering** in the dashboard (currently all projects share one office).
+- **Sparkline widgets** for per-room throughput.
+- **Distribution** — publish to npm as `claude-command-central` so install becomes `npm install -g` instead of `npm link`.
+- **(Optional) Humanoid pose pass 4** — split the SVG arm group at the
+  elbow so the DONE pose can render true crossed-arms-at-chest instead of
+  the rigid stand-down approximation. Same approach for finer gait IK.
+
+### Reference: Humanoid + room revamp passes (✅ all merged)
 
 Three independently-shippable passes — each previewed via Playwright MCP
 before commit, each reversible to `v0.1.1`.
 
-- **Pass 1 — Humanoid sprite v2.** ✅ Shipped on `feature/humanoid-sprite-v2`.
+- **Pass 1 — Humanoid sprite v2.** ✅ Squashed onto `main` (commit 74a5897).
   - Status-aware visor HUD: active scan beam, done check + halo, error red
     bars + bold `!` glyph, idle pulsing center eye.
   - Lit-from-above rim gradient on helmet, shoulders, chest, limbs, hip plate.
@@ -87,7 +114,7 @@ before commit, each reversible to `v0.1.1`.
   - Helmet vents enriched (3 slats per side instead of 1).
   - Diagonal chest seams, reactor inner ring, helmet center crest seam.
   - Fixed pre-existing React 19 warning on right-leg `animation` shorthand.
-- **Pass 2 — Room atmospherics.** ✅ Shipped on `feature/room-atmospherics-v2`.
+- **Pass 2 — Room atmospherics.** ✅ Squashed onto `main` (commit 020a037).
   - New shared `<Atmosphere phase color />` component (web/src/components/scenes/Atmosphere.tsx).
   - Three additive layers: perspective floor grid, volumetric light wash
     (anchored per phase: REVIEW lower-left fireplace, STRATEGY top lamp,
@@ -99,7 +126,7 @@ before commit, each reversible to `v0.1.1`.
   - 5 new keyframes + 1 light-breathe loop. Pointer-events disabled on the
     whole stack so it never blocks scene chrome.
   - Verified: 131 tests pass, typecheck clean, build green.
-- **Pass 3 — Motion polish + transitions.** ✅ Shipped on `feature/motion-polish-v2`.
+- **Pass 3 — Motion polish + transitions.** ✅ Squashed onto `main` (commit af99a54).
   - Distinct **done pose**: both arms rotate ~52° to a "stand-down" position
     (700ms cubic-bezier-with-overshoot settle, then holds via `forwards`).
     True crossed-arms requires elbow bend in the SVG (deferred).
@@ -121,13 +148,6 @@ before commit, each reversible to `v0.1.1`.
 
 Verification loop per pass: baseline screenshot → write code → comparison
 screenshot → ship or iterate. No blind commits.
-
-### Other queued work
-
-- **Bounded event history ring buffer** with a replay scrubber.
-- **Per-project tab filtering** in the dashboard (currently all projects share one office).
-- **Sparkline widgets** for per-room throughput.
-- **Distribution** — publish to npm as `claude-command-central` so install becomes `npm install -g` instead of `npm link`.
 
 ## Quick reference
 

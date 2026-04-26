@@ -25,6 +25,12 @@ The dashboard runs entirely on your local machine, reads append-only JSONL feed 
 - **QA Lab** — agents stunt-fall from a ceiling hatch into a safety-cushion stack: splash, sprawl, stand, thumbs-up.
 - **Deploy** — a launch pad, a parabolic rocket arc to a pulsing star, a cargo box offloaded; the stack grows with each run.
 
+**Visual design (humanoid + room revamp, three passes):**
+
+- **Status-aware sprite chrome** — the visor shows a different HUD per status: active scan beam, done checkmark with halo, error red bars + bold `!`, idle pulsing center eye. Lit-from-above rim gradient on helmet/shoulders/limbs. Soft ground shadow under the boots, slow breathing scaleY when resting, subtle joint highlights, vent slats on the helmet, diagonal chest seams.
+- **Per-room atmospherics** — every scene has a perspective floor grid, a phase-anchored volumetric light wash (REVIEW glows from the lower-left fireplace, STRATEGY from the top lamp, DEPLOY from the upper-right star, etc.), and ambient particles tuned per phase (PROMPT dust drift, PLAN thought sparks rising, BUILD welder sparks, REVIEW embers, TEST bubbles, DEPLOY twinkling starfield). Pointer-events disabled on the whole stack so it never blocks scene chrome.
+- **Distinct rest poses + motion polish** — done agents settle into a stand-down arms-rotated pose with cubic-bezier overshoot; error agents physically slump (head + body tilt forward 14–20°). INTAKE walking gait adds vertical bob on each step + tilt at the lane endpoints. BUILD has secondary motion: head dips on hammer impact and shoulders counter-rotate so the body feels weighted instead of rigid. Hand-tuned cubic-bezier easing across the loop keyframes.
+
 **Additional capabilities:**
 
 - **Per-project Mission Strip** — a band of mission cards below the pipeline showing each wired project's current objective plus its live / total agent count.
