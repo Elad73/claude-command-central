@@ -114,15 +114,22 @@ export function AgentSprite({ color, status, phase, size = 'lg' }: Props) {
           }}
         />
 
-        {/* HEAD GROUP — phase-specific motion */}
+        {/* HEAD GROUP — phase-specific motion. Pass 3 adds:
+              - error: head slumps forward + drops (defeated body language)
+              - BUILD: head dips on hammer impact (synced 1.4s with arm-swing)
+        */}
         <g
           style={{
             transformOrigin: '60px 55px',
-            animation: headBob
-              ? 'head-tilt 2.8s ease-in-out infinite'
-              : headNod
-                ? 'head-nod 1.6s ease-in-out infinite'
-                : 'none',
+            animation: errored
+              ? 'pose-slump-head 600ms cubic-bezier(0.34, 1.2, 0.5, 1) forwards'
+              : armSwing
+                ? 'build-head-dip 1.4s ease-in-out infinite'
+                : headBob
+                  ? 'head-tilt 2.8s ease-in-out infinite'
+                  : headNod
+                    ? 'head-nod 1.6s ease-in-out infinite'
+                    : 'none',
           }}
         >
           {/* Helmet shell */}
@@ -294,12 +301,21 @@ export function AgentSprite({ color, status, phase, size = 'lg' }: Props) {
           strokeWidth={0.8}
         />
 
-        {/* UPPER BODY GROUP — gets the resting "breathing" scaleY.
+        {/* UPPER BODY GROUP — Pass 1 added the resting breathing scaleY.
+            Pass 3 adds: error slump (rotate forward + drop), and build
+            shoulder-counter so the upper body has secondary motion when
+            the arms swing the hammer.
             Transform-origin pinned to belt so the head/legs don't drift. */}
         <g
           style={{
             transformOrigin: '60px 130px',
-            animation: resting ? 'sprite-breathing 4.2s ease-in-out infinite' : 'none',
+            animation: errored
+              ? 'pose-slump-body 600ms cubic-bezier(0.34, 1.2, 0.5, 1) forwards'
+              : armSwing
+                ? 'shoulder-counter 1.4s ease-in-out infinite'
+                : resting
+                  ? 'sprite-breathing 4.2s ease-in-out infinite'
+                  : 'none',
           }}
         >
           {/* SHOULDERS */}
@@ -324,17 +340,21 @@ export function AgentSprite({ color, status, phase, size = 'lg' }: Props) {
           <circle cx={31} cy={72} r={0.5} fill="#ffffff" opacity={0.85} />
           <circle cx={87} cy={72} r={0.5} fill="#ffffff" opacity={0.85} />
 
-          {/* LEFT ARM */}
+          {/* LEFT ARM — Pass 3 adds done = cross at chest, error = slump. */}
           <g
             style={{
               transformOrigin: '32px 76px',
-              animation: armSwing
-                ? 'arm-swing-left 1.4s ease-in-out infinite'
-                : stirring
-                  ? 'arm-stir-left 1.6s linear infinite'
-                  : launching
-                    ? 'arm-raise-left 2.4s ease-in-out infinite'
-                    : 'none',
+              animation: done
+                ? 'pose-cross-left 700ms cubic-bezier(0.34, 1.4, 0.5, 1) forwards'
+                : errored
+                  ? 'pose-slump-arm-left 600ms cubic-bezier(0.34, 1.2, 0.5, 1) forwards'
+                  : armSwing
+                    ? 'arm-swing-left 1.4s cubic-bezier(0.55, 0.06, 0.35, 1.1) infinite'
+                    : stirring
+                      ? 'arm-stir-left 1.6s linear infinite'
+                      : launching
+                        ? 'arm-raise-left 2.4s ease-in-out infinite'
+                        : 'none',
             }}
           >
             <rect x={22} y={76} width={10} height={26} rx={4} fill={`url(#${tintId})`} stroke={color} strokeWidth={1.2} />
@@ -351,17 +371,21 @@ export function AgentSprite({ color, status, phase, size = 'lg' }: Props) {
             <circle cx={26} cy={130} r={1.2} fill={color} />
           </g>
 
-          {/* RIGHT ARM */}
+          {/* RIGHT ARM — Pass 3 adds done = cross at chest, error = slump. */}
           <g
             style={{
               transformOrigin: '88px 76px',
-              animation: armSwing
-                ? 'arm-swing-right 1.4s ease-in-out infinite'
-                : stirring
-                  ? 'arm-stir-right 1.6s linear infinite'
-                  : launching
-                    ? 'arm-raise-right 2.4s ease-in-out infinite'
-                    : 'none',
+              animation: done
+                ? 'pose-cross-right 700ms cubic-bezier(0.34, 1.4, 0.5, 1) forwards'
+                : errored
+                  ? 'pose-slump-arm-right 600ms cubic-bezier(0.34, 1.2, 0.5, 1) forwards'
+                  : armSwing
+                    ? 'arm-swing-right 1.4s cubic-bezier(0.55, 0.06, 0.35, 1.1) infinite'
+                    : stirring
+                      ? 'arm-stir-right 1.6s linear infinite'
+                      : launching
+                        ? 'arm-raise-right 2.4s ease-in-out infinite'
+                        : 'none',
             }}
           >
             <rect x={88} y={76} width={10} height={26} rx={4} fill={`url(#${tintId})`} stroke={color} strokeWidth={1.2} />
