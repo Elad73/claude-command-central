@@ -4,6 +4,7 @@ import { AgentSprite } from '../AgentSprite';
 import { projectColor } from '../ProjectChip';
 import { AgentLabel } from './AgentLabel';
 import { isResting, type SceneProps } from './types';
+import { Atmosphere } from './Atmosphere';
 import type { AgentState } from '../../types';
 
 /**
@@ -521,14 +522,17 @@ function Lane({ agent, index, color, laneWidth, laneHeight, spriteSize }: LanePr
 export function TestScene({ agents, color }: SceneProps) {
   if (agents.length === 0) {
     return (
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div
-          className="font-display tracking-[0.4em] text-sm"
-          style={{ color, opacity: 0.55, textShadow: `0 0 8px ${color}` }}
-        >
-          // STUNT FLOOR STANDBY //
+      <>
+        <Atmosphere phase="TEST" color={color} />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div
+            className="font-display tracking-[0.4em] text-sm"
+            style={{ color, opacity: 0.55, textShadow: `0 0 8px ${color}` }}
+          >
+            // STUNT FLOOR STANDBY //
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
@@ -537,8 +541,10 @@ export function TestScene({ agents, color }: SceneProps) {
   const spriteSize: 'sm' | 'md' = agents.length <= 2 ? 'md' : 'sm';
 
   return (
-    <div className="absolute inset-0 pt-11 pb-10 px-2 overflow-hidden">
-      <div className="relative w-full h-full">
+    <>
+      <Atmosphere phase="TEST" color={color} />
+      <div className="absolute inset-0 pt-11 pb-10 px-2 overflow-hidden">
+        <div className="relative w-full h-full">
         {/* Faint floor line across the whole room, below the cushions */}
         <div
           className="absolute left-0 right-0 pointer-events-none"
@@ -604,7 +610,8 @@ export function TestScene({ agents, color }: SceneProps) {
             })}
           </motion.div>
         </AnimatePresence>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
