@@ -134,6 +134,87 @@ body {
   50%      { opacity: 1; }
 }
 
+/* ---------------------------------------------------------------------------
+ * Pass 3 — motion polish + distinct rest poses.
+ *
+ *   pose-cross-*       — done agent: arms cross at chest (700ms cubic, holds).
+ *   pose-slump-*       — error agent: head + torso slump, arms hang lower.
+ *   intake-walk-v2     — walking gait with vertical bob + rotational tilt at
+ *                         the lane endpoints. Replaces intake-walk.
+ *   build-head-dip     — head dips on hammer impact (synced to 1.4s arm-swing).
+ *   shoulder-counter   — shoulders rock counter to the arm swing.
+ * ------------------------------------------------------------------------- */
+
+/* Arm-cross angle calibrated against the SVG arm geometry: shoulder pivots
+   at (32,76)/(88,76), original hands at y=130 hanging straight down. A ~50°
+   rotation lands the hands at the chest mid-line — visually "arms crossed"
+   without an elbow bend (the arm group is rigid). Larger angles reach a
+   T-pose, which is wrong. */
+@keyframes pose-cross-left {
+  0%   { transform: rotate(0deg); }
+  60%  { transform: rotate(58deg); }
+  85%  { transform: rotate(48deg); }
+  100% { transform: rotate(52deg); }
+}
+@keyframes pose-cross-right {
+  0%   { transform: rotate(0deg); }
+  60%  { transform: rotate(-58deg); }
+  85%  { transform: rotate(-48deg); }
+  100% { transform: rotate(-52deg); }
+}
+
+/* Slump amplified — the previous 10°/12° read as "small lean" rather than
+   "defeated". Boost so the silhouette change is unmissable. */
+@keyframes pose-slump-body {
+  0%   { transform: rotate(0deg) translateY(0); }
+  60%  { transform: rotate(16deg) translateY(6px); }
+  100% { transform: rotate(14deg) translateY(5px); }
+}
+@keyframes pose-slump-head {
+  0%   { transform: rotate(0deg) translateY(0); }
+  60%  { transform: rotate(22deg) translateY(4px); }
+  100% { transform: rotate(20deg) translateY(3px); }
+}
+@keyframes pose-slump-arm-left {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(-8deg); }
+}
+@keyframes pose-slump-arm-right {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(8deg); }
+}
+
+@keyframes intake-walk-v2 {
+  0%    { transform: translate(0, 0)        rotate(0deg); }
+  6%    { transform: translate(0, 0)        rotate(0deg); }
+  12%   { transform: translate(3vw, -3px)   rotate(-0.6deg); }
+  18%   { transform: translate(6vw, 0)      rotate(0deg); }
+  24%   { transform: translate(9vw, -3px)   rotate(-0.6deg); }
+  30%   { transform: translate(12vw, 0)     rotate(0deg); }
+  36%   { transform: translate(15vw, -3px)  rotate(-0.6deg); }
+  44%   { transform: translate(18vw, 0)     rotate(2deg); }
+  56%   { transform: translate(18vw, 0)     rotate(2deg); }
+  62%   { transform: translate(15vw, -3px)  rotate(0.6deg); }
+  68%   { transform: translate(12vw, 0)     rotate(0deg); }
+  74%   { transform: translate(9vw, -3px)   rotate(0.6deg); }
+  80%   { transform: translate(6vw, 0)      rotate(0deg); }
+  86%   { transform: translate(3vw, -3px)   rotate(0.6deg); }
+  94%   { transform: translate(0, 0)        rotate(-2deg); }
+  100%  { transform: translate(0, 0)        rotate(0deg); }
+}
+
+@keyframes build-head-dip {
+  0%, 40%   { transform: translateY(0); }
+  55%       { transform: translateY(2px); }
+  68%       { transform: translateY(-1px); }
+  80%, 100% { transform: translateY(0); }
+}
+
+@keyframes shoulder-counter {
+  0%, 100% { transform: rotate(1.6deg); }
+  50%      { transform: rotate(-1.6deg); }
+}
+
 @keyframes flicker {
   0%, 100% { opacity: 1; }
   48% { opacity: 1; }

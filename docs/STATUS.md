@@ -67,12 +67,12 @@ See `~/.claude-command-central/projects.json`. Currently: `claude-command-centra
 
 ## Open blockers / decisions
 
-- None. Passes 1 & 2 of the humanoid + room revamp shipped on dedicated
+- None. All three passes of the humanoid + room revamp shipped on dedicated
   feature branches, each verified via Playwright MCP screenshots.
 
 ## Next up
 
-### 🎨 Humanoid + room revamp — Pass 1 ✅ Pass 2 ✅ Pass 3 queued
+### 🎨 Humanoid + room revamp — Pass 1 ✅ Pass 2 ✅ Pass 3 ✅
 
 Three independently-shippable passes — each previewed via Playwright MCP
 before commit, each reversible to `v0.1.1`.
@@ -99,9 +99,25 @@ before commit, each reversible to `v0.1.1`.
   - 5 new keyframes + 1 light-breathe loop. Pointer-events disabled on the
     whole stack so it never blocks scene chrome.
   - Verified: 131 tests pass, typecheck clean, build green.
-- **Pass 3 — Motion polish + transitions.** Hand-tuned cubic-bezier easing,
-  secondary motion (shoulders counter-rotate during arm swings), room-hop
-  echo trail, per-status rest poses (done = arms crossed, error = slumped).
+- **Pass 3 — Motion polish + transitions.** ✅ Shipped on `feature/motion-polish-v2`.
+  - Distinct **done pose**: both arms rotate ~52° to a "stand-down" position
+    (700ms cubic-bezier-with-overshoot settle, then holds via `forwards`).
+    True crossed-arms requires elbow bend in the SVG (deferred).
+  - Distinct **error pose**: head + body slump forward (~14–20°) with a
+    600ms cubic settle; arms hang slightly outward. Reads as "broken/defeated"
+    instantly, not just "red eyes."
+  - **Walking gait** in INTAKE — replaces the slide-translate-only
+    `intake-walk` with `intake-walk-v2` that adds vertical bob on each step
+    + rotational tilt at the lane endpoints. Drives with a real cubic-bezier
+    so the strides feel weighted.
+  - **Secondary motion** on BUILD: `build-head-dip` keyframe synced with the
+    1.4s arm-swing strike, plus `shoulder-counter` so the upper body rocks
+    opposite to the arm. Sells the hammer's weight.
+  - **Cubic-bezier easing** on `arm-swing-left/right` (replaces ease-in-out)
+    and on the new pose-cross / pose-slump animations (overshoot easing for
+    a deliberate-but-natural settle).
+  - Verified: 131 tests pass, typecheck clean, build green. Gallery
+    screenshots show distinct silhouettes for active / done / idle / error.
 
 Verification loop per pass: baseline screenshot → write code → comparison
 screenshot → ship or iterate. No blind commits.

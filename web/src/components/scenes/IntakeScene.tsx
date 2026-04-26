@@ -235,7 +235,8 @@ function Lane({
             bottom: 0,
             left: 0,
             width: spriteW,
-            animation: `intake-walk ${WALK_DURATION_S}s ease-in-out infinite`,
+            // Pass 3 walking gait: bob + tilt at lane endpoints (intake-walk-v2)
+            animation: `intake-walk-v2 ${WALK_DURATION_S}s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite`,
             animationDelay: `${delayMs}ms`,
             animationPlayState: playState,
             // Fallback when resting: freeze at the left (pallet) position.
