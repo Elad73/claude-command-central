@@ -4,6 +4,7 @@ import { AgentSprite } from '../AgentSprite';
 import { projectColor } from '../ProjectChip';
 import { AgentLabel } from './AgentLabel';
 import { isResting, type SceneProps } from './types';
+import { Atmosphere } from './Atmosphere';
 
 /**
  * STRATEGY — a planner's study.
@@ -43,40 +44,46 @@ function cellStyle(index: number, total: number): React.CSSProperties {
 export function StrategyScene({ agents, color }: SceneProps) {
   if (agents.length === 0) {
     return (
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div
-          className="font-display tracking-[0.4em] text-sm"
-          style={{ color, opacity: 0.55, textShadow: `0 0 8px ${color}` }}
-        >
-          // STUDY IDLE //
+      <>
+        <Atmosphere phase="PLAN" color={color} />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div
+            className="font-display tracking-[0.4em] text-sm"
+            style={{ color, opacity: 0.55, textShadow: `0 0 8px ${color}` }}
+          >
+            // STUDY IDLE //
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   const size: 'sm' | 'md' = agents.length >= 3 ? 'sm' : 'md';
 
   return (
-    <div className="absolute inset-0 pt-11 pb-10 px-3">
-      <div className="w-full h-full grid gap-2" style={gridStyle(agents.length)}>
-        <AnimatePresence mode="popLayout">
-          {agents.map((agent, i) => (
-            <motion.div
-              key={agent.key}
-              layoutId={`agent-${agent.key}`}
-              initial={{ opacity: 0, scale: 0.85, y: 8 }}
-              animate={{ opacity: isResting(agent.status) ? 0.75 : 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.85, y: -8 }}
-              transition={{ type: 'spring', stiffness: 240, damping: 26 }}
-              style={cellStyle(i, agents.length)}
-              className="relative flex items-end justify-center"
-            >
-              <PlanningDesk agent={agent} accent={color} size={size} />
-            </motion.div>
-          ))}
-        </AnimatePresence>
+    <>
+      <Atmosphere phase="PLAN" color={color} />
+      <div className="absolute inset-0 pt-11 pb-10 px-3">
+        <div className="w-full h-full grid gap-2" style={gridStyle(agents.length)}>
+          <AnimatePresence mode="popLayout">
+            {agents.map((agent, i) => (
+              <motion.div
+                key={agent.key}
+                layoutId={`agent-${agent.key}`}
+                initial={{ opacity: 0, scale: 0.85, y: 8 }}
+                animate={{ opacity: isResting(agent.status) ? 0.75 : 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.85, y: -8 }}
+                transition={{ type: 'spring', stiffness: 240, damping: 26 }}
+                style={cellStyle(i, agents.length)}
+                className="relative flex items-end justify-center"
+              >
+                <PlanningDesk agent={agent} accent={color} size={size} />
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 

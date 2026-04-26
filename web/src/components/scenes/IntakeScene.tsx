@@ -3,6 +3,7 @@ import type { CSSProperties } from 'react';
 import { AgentSprite } from '../AgentSprite';
 import { projectColor } from '../ProjectChip';
 import { AgentLabel } from './AgentLabel';
+import { Atmosphere } from './Atmosphere';
 import { isResting, type SceneProps } from './types';
 import type { AgentState } from '../../types';
 
@@ -278,14 +279,17 @@ function Lane({
 export function IntakeScene({ agents, color }: SceneProps) {
   if (agents.length === 0) {
     return (
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div
-          className="font-display tracking-[0.4em] text-sm"
-          style={{ color, opacity: 0.55, textShadow: `0 0 8px ${color}` }}
-        >
-          // INTAKE BAY STANDBY //
+      <>
+        <Atmosphere phase="PROMPT" color={color} />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div
+            className="font-display tracking-[0.4em] text-sm"
+            style={{ color, opacity: 0.55, textShadow: `0 0 8px ${color}` }}
+          >
+            // INTAKE BAY STANDBY //
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
@@ -294,7 +298,9 @@ export function IntakeScene({ agents, color }: SceneProps) {
   const spriteSize: 'sm' | 'md' = agents.length <= 2 ? 'md' : 'sm';
 
   return (
-    <div className="absolute inset-0 pt-11 pb-10 px-2 overflow-hidden">
+    <>
+      <Atmosphere phase="PROMPT" color={color} />
+      <div className="absolute inset-0 pt-11 pb-10 px-2 overflow-hidden">
       <div className="relative w-full h-full flex flex-col justify-around">
         <AnimatePresence mode="popLayout">
           {agents.map((agent, index) => {
@@ -329,7 +335,8 @@ export function IntakeScene({ agents, color }: SceneProps) {
             );
           })}
         </AnimatePresence>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

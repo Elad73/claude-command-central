@@ -4,6 +4,7 @@ import { AgentSprite } from '../AgentSprite';
 import { projectColor } from '../ProjectChip';
 import { AgentLabel } from './AgentLabel';
 import { isResting, type SceneProps } from './types';
+import { Atmosphere } from './Atmosphere';
 import type { AgentState } from '../../types';
 
 /**
@@ -619,45 +620,51 @@ function Lane({
 export function DeployScene({ agents, color }: SceneProps) {
   if (agents.length === 0) {
     return (
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div
-          className="font-display tracking-[0.4em] text-sm"
-          style={{ color, opacity: 0.55, textShadow: `0 0 8px ${color}` }}
-        >
-          // LAUNCH PAD STANDBY //
+      <>
+        <Atmosphere phase="DEPLOY" color={color} />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div
+            className="font-display tracking-[0.4em] text-sm"
+            style={{ color, opacity: 0.55, textShadow: `0 0 8px ${color}` }}
+          >
+            // LAUNCH PAD STANDBY //
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   const count = Math.min(agents.length, 4);
 
   return (
-    <div className="absolute inset-0 pt-11 pb-10 px-2 overflow-hidden">
-      <div className="relative w-full h-full flex flex-row items-stretch justify-around gap-1">
-        <AnimatePresence mode="popLayout">
-          {agents.slice(0, count).map((agent, index) => {
-            const resting = isResting(agent.status);
-            return (
-              <motion.div
-                key={agent.key}
-                layoutId={`agent-${agent.key}`}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: resting ? 0.7 : 1, y: 0 }}
-                exit={{ opacity: 0, y: -12 }}
-                transition={{ type: 'spring', stiffness: 260, damping: 26 }}
-                className="relative h-full"
-                style={{
-                  flexBasis: `${100 / count}%`,
-                  minWidth: 0,
-                }}
-              >
-                <Lane agent={agent} index={index} color={color} />
-              </motion.div>
-            );
-          })}
-        </AnimatePresence>
+    <>
+      <Atmosphere phase="DEPLOY" color={color} />
+      <div className="absolute inset-0 pt-11 pb-10 px-2 overflow-hidden">
+        <div className="relative w-full h-full flex flex-row items-stretch justify-around gap-1">
+          <AnimatePresence mode="popLayout">
+            {agents.slice(0, count).map((agent, index) => {
+              const resting = isResting(agent.status);
+              return (
+                <motion.div
+                  key={agent.key}
+                  layoutId={`agent-${agent.key}`}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: resting ? 0.7 : 1, y: 0 }}
+                  exit={{ opacity: 0, y: -12 }}
+                  transition={{ type: 'spring', stiffness: 260, damping: 26 }}
+                  className="relative h-full"
+                  style={{
+                    flexBasis: `${100 / count}%`,
+                    minWidth: 0,
+                  }}
+                >
+                  <Lane agent={agent} index={index} color={color} />
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
