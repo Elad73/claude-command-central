@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: 2026-04-27 (mission strip — running emphasis + stale-card filter)
+Last updated: 2026-04-27 (mission card redesign — deep substrate, accent rail, engraved badge)
 
 ## ⚓ Rollback baseline — `v0.1.1`
 
@@ -48,6 +48,7 @@ See `~/.claude-command-central/projects.json`. Currently: `claude-command-centra
 
 ## Recently completed (post-MVP)
 
+- **Mission card redesign — deep substrate + accent rail + engraved badge** *(2026-04-27)* — replaced the saturated project-tinted card body with a deep ink substrate (`ink-900`/`ink-800`). Per-project hue now lives only on a 4 px neon-cored left rail, the badge glyph, and a 2.4 s breathing halo whose peak alpha is capped at `${color}55` (down from the prior `${color}AA`/`${color}DD` washes that drowned the body text). Real elevation comes from a 4-layer shadow stack (top-rim highlight, bottom inner shadow, floor hairline, drop). Badge moved from a flat tinted tile to an engraved plate sitting INTO the card, with the glyph in the project hue rather than white. Type hierarchy realigned so the objective body is the brightest element on the card. External component contract unchanged. Captured as `K-PAT-002` (substrate-flip pattern) and `K-PIT-002` (the `npm run build:web` ≠ deployable artifact gotcha that cost a debug round-trip during this work). Browser-verified before commit per the post-Rive lesson.
 - **Mission strip — running emphasis + stale-card filter** *(2026-04-27)* — running mission cards (any project with `counts.live > 0`) now render with a static multi-tone gradient in the project hue, a 4 px left-edge accent stripe with neon drop-shadow, and a soft static halo. White text + heavy black text-shadow keeps the typography sharp over the saturated fill. The strip is now strictly "what's happening right now" — completed missions linger 4 s for the celebration burst then drop off entirely; the header counter (`N RUNNING · N DONE`) owns the historical tally. New `.claude/knowledge/` knowledge base bootstrapped with three entries (motion-vs-static dashboard pattern, `CLAUDE_CONFIG_DIR` migration pitfall, `.claude.json` per-project state quirk).
 - **Subagent team visibility** — `SubagentStart` / `SubagentStop` hooks emit a dedicated agent card per subagent using `agent_type` as the name and auto-routing to a phase based on the subagent's role (`*-reviewer` → REVIEW, `*-test*` → TEST, `*-architect`/`explore` → PLAN, etc.). Each teammate shows up in the office under its own name.
 - **Humanized task text** — bash commands and tool calls are translated into plain English for the thought bubbles (e.g. `npm test` → "Running tests", `git commit` → "Committing"), while the Live Feed keeps the raw technical text.
