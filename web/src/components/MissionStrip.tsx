@@ -153,72 +153,68 @@ function MissionCard({
       ? formatDuration(mission.completedAt - mission.startedAt)
       : null;
 
-  // CSS custom properties feed the running-halo + perimeter-scanner keyframes
-  // in globals.css. Pre-mixing the alpha suffixes here keeps the keyframe
-  // definitions project-color-agnostic. Iteration 2 adds higher-intensity stops
-  // (--c3a, --cdd) so the halo can radiate visibly without changing the hue.
-  const runningVars = running
-    ? ({
-        '--ccc-run-c22': `${color}22`,
-        '--ccc-run-c28': `${color}28`,
-        '--ccc-run-c3a': `${color}3A`,
-        '--ccc-run-c40': `${color}40`,
-        '--ccc-run-c55': `${color}55`,
-        '--ccc-run-caa': `${color}AA`,
-        '--ccc-run-cdd': `${color}DD`,
-        '--ccc-run-cff': color,
-      } as React.CSSProperties)
-    : {};
+  // CSS custom properties drive the rail, badge, and breathing halo keyframes.
+  // Project hue is now an ACCENT — the substrate is always deep ink — so the
+  // alpha stops here are intentionally lower than the previous (cdd/cff-fill)
+  // design. Peak halo alpha is c55, never higher.
+  const projectVars = {
+    '--ccc-run-c3a': `${color}3A`,
+    '--ccc-run-c55': `${color}55`,
+    '--ccc-run-caa': `${color}AA`,
+    '--ccc-run-cff': color,
+  } as React.CSSProperties;
 
-  // The running card gets brighter chrome AND a breathing halo class. The halo
-  // is what wins the glance: a moving glow next to four static green DONE
-  // borders is unmistakable, even peripherally.
-  const baseShadow = done
-    ? `0 0 8px ${color}25, inset 0 0 6px ${color}10`
-    : 'none';
+  // Class composition — base substrate first, state modifier second.
+  const cardClasses = [
+    'ccc-mission-card',
+    'relative flex items-stretch min-w-0',
+    running ? 'ccc-mission-card-running' : '',
+    done ? 'ccc-mission-card-done' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  // Muted chrome colors — these never use the project hue at high alpha.
+  // The hue lives on the rail and the badge glyph; everything else is neutral.
+  const labelColor = running ? '#7a8099' : '#5a607a';
+  const metaColor = '#9ba3bf';
 
   return (
     <motion.div
       ref={cardRef}
       animate={
         celebrating
-          ? { scale: [1, 1.08, 1] }
-          : { scale: running ? 1.015 : 1 }
+          ? { scale: [1, 1.05, 1] }
+          : { scale: running ? 1.01 : 1 }
       }
       transition={
         celebrating
           ? { duration: 0.6, ease: 'easeOut', times: [0, 0.45, 1] }
           : { duration: 0.25 }
       }
-      className={`relative flex items-center gap-3 rounded-md border backdrop-blur-sm min-w-0 overflow-hidden${
-        running ? ' ccc-mission-running' : ''
-      }`}
+      className={cardClasses}
       onMouseEnter={openPopover}
       onMouseLeave={closePopover}
       style={{
-        padding: '6px 12px',
-        // For running cards, the halo keyframe drives both box-shadow AND
-        // background (alpha-cycling in lockstep), so the inline `background`
-        // is omitted to let the animation own the fill.
-        background: done ? `${color}10` : running ? undefined : `${color}18`,
-        borderColor: done ? `${color}66` : running ? color : `${color}AA`,
-        // Halo class drives box-shadow when running; static fallback otherwise.
-        boxShadow: running ? undefined : baseShadow,
-        opacity: done ? 0.92 : 1,
+        // Padding leaves room for the 4px left rail. Right padding generous
+        // so the done check has air. Vertical 9/8 keeps the 38px badge breathing.
+        padding: '9px 14px 8px 14px',
+        opacity: done ? 0.94 : 1,
         flex: '1 1 260px',
         minWidth: 220,
         maxWidth: 520,
         cursor: 'help',
-        // Running cards lift above their siblings — halo can spill, popovers
-        // already portal so this only competes with strip-local elements.
+        // Running cards lift above their siblings so the halo can spill.
         zIndex: running ? 2 : 0,
-        // Left-edge accent stripe — the most reliable "this row matters"
-        // anchor. 4px solid project hue, neon-cored. Pairs with the moving
-        // halo so the card has both a static AND a kinetic identity.
-        borderLeftWidth: running ? 4 : 1,
-        ...runningVars,
+        ...projectVars,
       }}
     >
+      {/* Left accent rail — the per-project identity anchor. */}
+      <span
+        aria-hidden
+        className={done ? 'ccc-mission-rail ccc-mission-rail-done' : 'ccc-mission-rail'}
+      />
+
       {/* Sheen sweep across the card on completion — single pass. */}
       {celebrating && (
         <span
@@ -237,33 +233,20 @@ function MissionCard({
       {/* Particle burst — 10 dots flying outward from card center. */}
       {celebrating && <ParticleBurst color={color} />}
 
-      {/* Project code badge */}
-      <div
-        className="flex flex-col items-center justify-center flex-shrink-0 font-display font-black"
-        style={{
-          width: 44,
-          height: 36,
-          borderRadius: 6,
-          background: `${color}22`,
-          border: `1px solid ${color}`,
-          color: '#ffffff',
-          textShadow: `0 0 8px ${color}`,
-          fontSize: 13,
-          letterSpacing: '0.1em',
-        }}
-      >
+      {/* Engraved project-code badge — sits INTO the card surface. */}
+      <div className="ccc-mission-badge font-display" style={{ marginRight: 12 }}>
         {code}
       </div>
 
-      <div className="flex flex-col min-w-0 flex-1 relative">
+      <div className="flex flex-col min-w-0 flex-1 relative justify-center">
         <div className="flex items-center gap-2">
           <span
-            className="font-display text-[0.65rem] tracking-[0.25em] font-bold uppercase"
+            className="font-display font-bold uppercase"
             style={{
-              color: running ? '#ffffff' : `${color}DD`,
-              textShadow: running
-                ? `0 0 8px ${color}, 0 0 16px rgba(0,0,0,0.85)`
-                : `0 0 6px ${color}`,
+              fontSize: '0.6rem',
+              letterSpacing: '0.32em',
+              color: labelColor,
+              // No glow — pure muted chrome. The substrate carries the contrast.
             }}
           >
             Mission
@@ -271,34 +254,49 @@ function MissionCard({
           {done ? <DonePill /> : <StatusPip status={mission.status} color={color} />}
           {counts.total > 0 && !done && (
             <span
-              className="font-mono text-[0.65rem]"
+              className="font-mono"
               style={{
-                color: running ? '#ffffff' : `${color}BB`,
-                textShadow: running ? '0 0 6px rgba(0,0,0,0.9)' : 'none',
+                fontSize: '0.65rem',
+                color: metaColor,
+                letterSpacing: '0.04em',
               }}
             >
-              {counts.live}/{counts.total}▲
+              {counts.live}<span style={{ opacity: 0.4 }}>/</span>{counts.total}
+              <span style={{ marginLeft: 3, color: '#7a8099' }}>▲</span>
             </span>
           )}
         </div>
+        {/* The objective is the hero — brightest, largest single element on
+         * the card. No text-shadow: the deep ink substrate is doing the
+         * contrast work. Warm near-white (#e8eaff) over ink-900/800 reads
+         * crisp without "shouting". */}
         <div
-          className="font-mono text-xs truncate"
+          className="font-mono truncate"
           style={{
-            color: '#ffffff',
-            textShadow: running
-              ? '0 0 6px rgba(0,0,0,0.95), 0 1px 2px rgba(0,0,0,1)'
-              : 'none',
+            color: '#e8eaff',
+            fontSize: '0.84rem',
+            lineHeight: 1.35,
+            marginTop: 2,
+            fontWeight: 400,
           }}
         >
           {mission.objective}
         </div>
         {done && (
           <div
-            className="font-mono text-[0.65rem] mt-0.5"
-            style={{ color: '#39ff14', textShadow: '0 0 4px #39ff1466' }}
+            className="font-mono"
+            style={{
+              fontSize: '0.62rem',
+              marginTop: 3,
+              color: '#39ff14cc',
+              letterSpacing: '0.03em',
+            }}
           >
             <span style={{ marginRight: 4 }}>✓</span>
-            {duration ?? '—'} · {counts.total} agent{counts.total === 1 ? '' : 's'} ·{' '}
+            {duration ?? '—'}
+            <span style={{ color: '#39ff1455', margin: '0 6px' }}>·</span>
+            {counts.total} agent{counts.total === 1 ? '' : 's'}
+            <span style={{ color: '#39ff1455', margin: '0 6px' }}>·</span>
             {mission.actionCount} action{mission.actionCount === 1 ? '' : 's'}
           </div>
         )}
@@ -309,13 +307,14 @@ function MissionCard({
           aria-hidden
           className="absolute"
           style={{
-            top: 4,
-            right: 6,
-            fontSize: 14,
+            top: 5,
+            right: 8,
+            fontSize: 11,
             color: '#39ff14',
-            textShadow: '0 0 6px #39ff14, 0 0 12px #39ff1488',
+            textShadow: '0 0 6px rgba(57,255,20,0.7)',
             fontWeight: 900,
             lineHeight: 1,
+            letterSpacing: 0,
           }}
           title="Mission complete"
         >
@@ -481,10 +480,22 @@ function StatusPip({ status, color }: { status: string; color: string }) {
         : status === 'running'
           ? '#39ff14'
           : color;
+  // Real pill plate behind the dot+label so it reads as a contained meta token,
+  // not as floating text. Background is a sliver of the status hue over deep
+  // ink; border picks up the same hue at low alpha. Sits flush with the
+  // MISSION label baseline.
   return (
     <span
-      className="inline-flex items-center gap-1 font-mono uppercase tracking-wider"
-      style={{ fontSize: 9, color: col }}
+      className="inline-flex items-center gap-1 font-mono uppercase"
+      style={{
+        fontSize: 9,
+        color: col,
+        letterSpacing: '0.14em',
+        padding: '2px 7px 2px 6px',
+        borderRadius: 999,
+        background: 'rgba(0, 0, 0, 0.4)',
+        border: `1px solid ${col}44`,
+      }}
     >
       <span
         className="inline-block rounded-full"
