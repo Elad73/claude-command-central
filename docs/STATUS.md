@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: 2026-04-26 (post humanoid + room revamp merge)
+Last updated: 2026-04-27 (mission strip — running emphasis + stale-card filter)
 
 ## ⚓ Rollback baseline — `v0.1.1`
 
@@ -48,6 +48,7 @@ See `~/.claude-command-central/projects.json`. Currently: `claude-command-centra
 
 ## Recently completed (post-MVP)
 
+- **Mission strip — running emphasis + stale-card filter** *(2026-04-27)* — running mission cards (any project with `counts.live > 0`) now render with a static multi-tone gradient in the project hue, a 4 px left-edge accent stripe with neon drop-shadow, and a soft static halo. White text + heavy black text-shadow keeps the typography sharp over the saturated fill. The strip is now strictly "what's happening right now" — completed missions linger 4 s for the celebration burst then drop off entirely; the header counter (`N RUNNING · N DONE`) owns the historical tally. New `.claude/knowledge/` knowledge base bootstrapped with three entries (motion-vs-static dashboard pattern, `CLAUDE_CONFIG_DIR` migration pitfall, `.claude.json` per-project state quirk).
 - **Subagent team visibility** — `SubagentStart` / `SubagentStop` hooks emit a dedicated agent card per subagent using `agent_type` as the name and auto-routing to a phase based on the subagent's role (`*-reviewer` → REVIEW, `*-test*` → TEST, `*-architect`/`explore` → PLAN, etc.). Each teammate shows up in the office under its own name.
 - **Humanized task text** — bash commands and tool calls are translated into plain English for the thought bubbles (e.g. `npm test` → "Running tests", `git commit` → "Committing"), while the Live Feed keeps the raw technical text.
 - **Per-project agent colors** — agents wear their project color (hex-stable short codes like `CCC`, `GB`, `DL`); rooms keep their phase color for identity.

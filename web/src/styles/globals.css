@@ -673,11 +673,16 @@ body {
 }
 
 /* ---------------------------------------------------------------------------
- * MISSION STRIP — completion celebration.
+ * MISSION STRIP — completion celebration + running emphasis.
  *
- *   ccc-mission-sheen — single-pass diagonal gradient sweep across a card
- *                       border on a running→done transition. Namespaced with
- *                       `ccc-` so it can't collide with scene keyframes above.
+ *   ccc-mission-sheen          — single-pass diagonal gradient sweep across a
+ *                                  card border on a running→done transition.
+ *   ccc-mission-running        — static multi-tone gradient fill in the project
+ *                                  hue + soft static glow halo. No animation
+ *                                  (deliberately quiet — the hue, gradient
+ *                                  depth, and glow do the work). Each card
+ *                                  uses its own color via --ccc-run-* vars.
+ *   Namespaced with `ccc-` so they can't collide with scene keyframes above.
  * ------------------------------------------------------------------------- */
 @keyframes ccc-mission-sheen-sweep {
   0%   { transform: translateX(-120%); opacity: 0; }
@@ -688,4 +693,32 @@ body {
 
 .ccc-mission-sheen {
   animation: ccc-mission-sheen-sweep 900ms ease-out 1 forwards;
+}
+
+/* Static multi-tone gradient — five stops of the project hue at descending
+ * alpha give the card a lit-from-the-left feel without any motion. Brightest
+ * solid color on the left edge (where the badge sits), softening across to
+ * a deeper tone on the right (where text sits) so the typography stays
+ * readable against a calmer band. The dark background-color underneath shows
+ * through the lower-alpha stops, deepening them further. */
+.ccc-mission-running {
+  background-color: rgba(7, 9, 18, 0.88);
+  background-image: linear-gradient(
+    115deg,
+    var(--ccc-run-cff) 0%,
+    var(--ccc-run-cdd) 22%,
+    var(--ccc-run-caa) 48%,
+    var(--ccc-run-c55) 78%,
+    var(--ccc-run-c22) 100%
+  );
+  /* Soft static glow — much gentler than the previous animated peak. Two
+   * stacked drops give depth without "alarm" intensity. */
+  box-shadow:
+    0 0 14px 0 var(--ccc-run-caa),
+    0 0 30px 2px var(--ccc-run-c55),
+    inset 0 0 8px 0 rgba(0, 0, 0, 0.35);
+  /* Left-edge stripe glow — the static 4px border-left from the inline style
+   * gets its own neon halo so the kanban "active" anchor reads as cyber,
+   * not corporate. */
+  filter: drop-shadow(-2px 0 5px var(--ccc-run-caa));
 }

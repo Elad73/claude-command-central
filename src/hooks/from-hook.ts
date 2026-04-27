@@ -108,7 +108,7 @@ const truncate = (text: string, max: number): string =>
 /**
  * Collapse a noisy filesystem path down to something a human scans quickly.
  *   /home/eladr/personal-space/playground/gmail-board/src/App.tsx  ->  …/src/App.tsx
- *   /home/eladr/.claude/skills/foo/SKILL.md                         ->  ~/.claude/skills/foo/SKILL.md
+ *   /home/eladr/.claude-personal/skills/foo/SKILL.md                ->  ~/.claude-personal/skills/foo/SKILL.md
  */
 const shortenPath = (p: string): string => {
   const home = process.env['HOME'];
