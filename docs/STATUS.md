@@ -24,13 +24,16 @@ preview again.
 
 ## Current Phase
 
-**Design / theming pass — on branch `feat/theme-system-and-showcase` (PR pending).**
+**Design / theming pass — on branch `feat/theme-system-and-showcase` (PR #6).**
 Adds a runtime theme system (3 switchable, persisted themes: neon-noir, amber-crt,
-clay) as a single source of truth, showcase screenshots + README gallery, and the
-first round of scene-defect fixes (Sherlock hat attached to head, build-bay header
-no longer occluded by the tool rack, clay reworked to a readable warm-dark theme).
-Remaining sprite/scene defects tracked in `docs/SCENE-DEFECTS.md` (hammer/nail
-geometry, QA-lab readability redesign, theme-aware robot color). Typecheck clean.
+clay) as a single source of truth, showcase screenshots + README gallery, and
+scene-defect fixes: Sherlock hat attached to the head, build-bay header no longer
+occluded by the tool rack, clay reworked to a readable warm-dark theme, and the
+**QA-lab stunt-fall redesigned to be readable** (upright feet-first landing into an
+enlarged crash mat; fixed a `translateY(calc(100% - ..))` bug that collapsed the
+fall distance — verified by sampling the sprite's feet). Remaining defects tracked
+in `docs/SCENE-DEFECTS.md` (build hammer/nail geometry, theme-aware robot color,
+per-room set dressing). Typecheck clean; tests 131/131.
 
 > Re-learned the post-Rive lesson the hard way: the clay theme was first committed
 > after a single glance and shipped unreadable. Now re-verifying every visual change
