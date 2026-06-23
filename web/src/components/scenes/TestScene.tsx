@@ -15,13 +15,15 @@ import type { AgentState } from '../../types';
  *   - A tower/ladder silhouette on the side (flavor only, not animated).
  *   - A stack of padded safety cushions on the floor.
  *
- * 6-second choreography, looped per agent:
- *   0.00–1.10s  FALL      agent drops from the hatch, head-down, accelerating.
- *   1.10–1.60s  IMPACT    agent hits cushion; splash burst + cushion squash.
- *   1.60–2.80s  SPRAWL    agent lies diagonally on the cushion, tiny wobble.
- *   2.80–3.80s  STANDUP   agent rotates upright beside the cushion.
- *   3.80–5.00s  THUMBSUP  arm raises, a thumbs-up glyph pops above the head.
- *   5.00–6.00s  RESET     agent fades, returns to ceiling hatch invisibly.
+ * Choreography (looped per agent) — reads as a stunt fall SAFELY CAUGHT by the
+ * crash mat (the QA "catch"), so the agent stays upright throughout:
+ *   PERCH     agent waits in the hatch.
+ *   FALL      drops UPRIGHT, accelerating, slight wind tilt.
+ *   TOUCHDOWN lands feet-first on the mat; dust poof.
+ *   SINK      rides the mat down as it absorbs (deep squash).
+ *   BOUNCE    the mat throws it back up; settles standing on top.
+ *   THUMBSUP  a thumbs-up glyph pops above the head — "take passed".
+ *   RESET     fades, returns to the hatch for the next take.
  *
  * Resting agents freeze their loop (`animationPlayState: 'paused'`) and dim,
  * so the workstation reads as "powered down" instead of doing stunts idly.
@@ -29,8 +31,8 @@ import type { AgentState } from '../../types';
  * Per-agent stagger: `index * 1600ms` so falls never sync across lanes.
  */
 
-const CYCLE_S = 6;
-const STAGGER_MS = 1600;
+const CYCLE_S = 7.5;
+const STAGGER_MS = 1900;
 
 /** Ceiling slab with a dashed "hatch" circle + a rectangular trap-door flap
  *  that swings open during the fall window. The flap pivots from its left edge. */
@@ -307,35 +309,6 @@ function ThumbsUpGlyph({ color, delayMs, playState }: {
   );
 }
 
-/** A tiny star/asterisk "ouch" mark that flickers during the sprawl window. */
-function ImpactMark({ color, delayMs, playState }: {
-  color: string;
-  delayMs: number;
-  playState: CSSProperties['animationPlayState'];
-}) {
-  return (
-    <div
-      style={{
-        width: 14,
-        height: 14,
-        color,
-        fontFamily: 'monospace',
-        fontWeight: 'bold',
-        fontSize: 16,
-        lineHeight: '14px',
-        textAlign: 'center',
-        textShadow: `0 0 6px ${color}`,
-        animation: `test-impact-mark ${CYCLE_S}s ease-in-out infinite`,
-        animationDelay: `${delayMs}ms`,
-        animationPlayState: playState,
-      }}
-      aria-hidden
-    >
-      *
-    </div>
-  );
-}
-
 interface LaneProps {
   agent: AgentState;
   index: number;
@@ -358,10 +331,11 @@ function Lane({ agent, index, color, laneWidth, laneHeight, spriteSize }: LanePr
   const spriteW = spriteSize === 'md' ? 80 : 52;
   const spriteH = spriteSize === 'md' ? 120 : 78;
 
-  // Cushion dimensions scale to lane. Keep it narrower than the lane so the
-  // ladder + label have breathing room.
-  const cushionW = Math.min(laneWidth - 30, Math.max(60, spriteW + 20));
-  const cushionH = Math.max(40, Math.min(72, Math.round(spriteH * 0.35)));
+  // Crash mat dimensions — make it the dominant floor element so the "caught
+  // safely" read is obvious. Wider than the sprite, and tall enough to look
+  // like a real stunt cushion (not a thin pad).
+  const cushionW = Math.min(laneWidth - 18, Math.max(76, spriteW + 36));
+  const cushionH = Math.max(54, Math.min(96, Math.round(spriteH * 0.55)));
 
   // Vertical geometry inside the lane (top to bottom):
   //   [ ceiling strip ] [ fall track ... ] [ cushion ] [ label ]
@@ -369,9 +343,17 @@ function Lane({ agent, index, color, laneWidth, laneHeight, spriteSize }: LanePr
   const labelAreaH = 30;
   const cushionBottom = labelAreaH;
   const ceilingTopOffset = 2;
+  const wrapperTop = ceilingTopOffset + 6;
 
-  // Fall distance is computed inside the CSS keyframe via `--fall`, which we
-  // set to `calc(100% - spriteH - 10px)` below — adapts to actual lane height.
+  // Fall distance as an ABSOLUTE pixel value. (Critical: a `%` inside
+  // `translateY()` resolves against the element's OWN height, not the lane —
+  // so a `calc(100% - …)` fall collapses to almost nothing. Compute real px.)
+  // Land the agent's feet on the mat top, then let the keyframe sink it in.
+  const matTopFromLaneTop = laneHeight - cushionBottom - cushionH;
+  const fallPx = Math.max(
+    40,
+    matTopFromLaneTop - wrapperTop - spriteH + Math.round(cushionH * 0.35),
+  );
 
   return (
     <div
@@ -419,7 +401,7 @@ function Lane({ agent, index, color, laneWidth, laneHeight, spriteSize }: LanePr
           width={cushionW}
           height={cushionH}
         />
-        {/* Splash burst at the top-center of the cushion */}
+        {/* Dust poof at the top-center of the mat on touchdown */}
         <div
           className="absolute left-1/2"
           style={{
@@ -429,17 +411,6 @@ function Lane({ agent, index, color, laneWidth, laneHeight, spriteSize }: LanePr
           }}
         >
           <SplashBurst color={color} delayMs={delayMs} playState={playState} />
-        </div>
-        {/* Tiny impact mark near top-center */}
-        <div
-          className="absolute left-1/2"
-          style={{
-            top: 2,
-            transform: 'translateX(-50%)',
-            pointerEvents: 'none',
-          }}
-        >
-          <ImpactMark color={color} delayMs={delayMs} playState={playState} />
         </div>
       </div>
 
@@ -452,7 +423,7 @@ function Lane({ agent, index, color, laneWidth, laneHeight, spriteSize }: LanePr
         className="absolute"
         style={{
           left: '50%',
-          top: ceilingTopOffset + 6,
+          top: wrapperTop,
           bottom: cushionBottom,
           width: spriteW,
           marginLeft: -spriteW / 2,
@@ -466,10 +437,9 @@ function Lane({ agent, index, color, laneWidth, laneHeight, spriteSize }: LanePr
             left: 0,
             width: spriteW,
             height: spriteH,
-            // Fall distance = wrapper height - sprite height - 10px headroom.
-            // Using `calc(100% - ...)` so the fall adapts to whatever height
-            // the lane actually occupies, not a hardcoded estimate.
-            ['--fall' as string]: `calc(100% - ${spriteH + 10}px)`,
+            // Absolute px fall (see fallPx above) — the agent drops from the
+            // hatch and lands its feet on the mat top.
+            ['--fall' as string]: `${fallPx}px`,
             transformOrigin: 'center bottom',
             animation: `test-agent-cycle ${CYCLE_S}s linear infinite`,
             animationDelay: `${delayMs}ms`,
@@ -536,9 +506,10 @@ export function TestScene({ agents, color }: SceneProps) {
     );
   }
 
-  // Decide sprite size from agent count — solo agent gets the big sprite,
-  // 2 agents are medium, 3-4 agents go small to keep lanes readable.
-  const spriteSize: 'sm' | 'md' = agents.length <= 2 ? 'md' : 'sm';
+  // TEST lanes are vertically tight (hatch + fall track + tall crash mat + label).
+  // Always use the small sprite so there's real fall distance and the agent can
+  // visibly land INTO the mat rather than floating above it.
+  const spriteSize: 'sm' | 'md' = 'sm';
 
   return (
     <>

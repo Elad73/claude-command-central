@@ -32,12 +32,19 @@ Status: ✅ fixed & verified · 🔧 in progress · ⬜ todo
 
 ## QA LAB (TEST)
 
-- ⬜ **Animation is unreadable.** A human (and an honest AI) can't tell what's
-  happening. Intended story: a robot **falls from a hatch and lands in a stunt
-  safety-cushion** — the QA "catch" that saves it from a crash (i.e. tests catching
-  bugs). Needs a legible redesign: clear hatch → fall → cushion squash → bounce →
-  thumbs-up, with the cushion reading obviously as a crash mat, and pacing slow
-  enough to parse.
+- ✅ **Animation was unreadable — redesigned & verified.** Three problems fixed:
+  (1) the agent fell **head-down** and **sprawled at 48°** with an **"*" ouch mark**
+  → read as *crashing*, not *caught*. Now it falls **upright**, lands **feet-first**,
+  sinks into the mat, **bounces**, stands, thumbs-up. (2) The crash mat was a thin
+  pad → enlarged into a clear stunt cushion that deeply absorbs (scaleY 0.5) on
+  impact. (3) **Root-cause bug:** the fall used `translateY(calc(100% - …))`, but a
+  `%` in `translateY` resolves against the element's *own* height — so the fall
+  collapsed to ≈ −6px and the agent never reached the mat (this was wrong in the
+  original too). Now computed as an absolute px from real lane geometry; verified by
+  sampling the sprite's feet (130 → 249px, landing into the mat at 229–281).
+  Pacing slowed 6s → 7.5s.
+- ⬜ **Polish:** tune the bounce ease + dust-poof color; multi-agent lanes (3–4) not
+  yet re-verified at the smaller size.
 
 ## Sprite quality (all rooms)
 
