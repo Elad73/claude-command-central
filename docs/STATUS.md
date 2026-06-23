@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: 2026-04-27 (mission card redesign — deep substrate, accent rail, engraved badge)
+Last updated: 2026-06-23 (runtime theme system + showcase screenshots + scene defect fixes)
 
 ## ⚓ Rollback baseline — `v0.1.1`
 
@@ -24,10 +24,20 @@ preview again.
 
 ## Current Phase
 
-**Humanoid + room revamp shipped — three squash commits on `main` covering
-sprite chrome, room atmospherics, and motion polish.** All work was Playwright-
-MCP-verified before commit per the lesson logged after the Rive incident.
-Tests 131/131 pass, typecheck clean, build green. Ready for `v0.2.0` tag.
+**Design / theming pass — on branch `feat/theme-system-and-showcase` (PR pending).**
+Adds a runtime theme system (3 switchable, persisted themes: neon-noir, amber-crt,
+clay) as a single source of truth, showcase screenshots + README gallery, and the
+first round of scene-defect fixes (Sherlock hat attached to head, build-bay header
+no longer occluded by the tool rack, clay reworked to a readable warm-dark theme).
+Remaining sprite/scene defects tracked in `docs/SCENE-DEFECTS.md` (hammer/nail
+geometry, QA-lab readability redesign, theme-aware robot color). Typecheck clean.
+
+> Re-learned the post-Rive lesson the hard way: the clay theme was first committed
+> after a single glance and shipped unreadable. Now re-verifying every visual change
+> in the browser before claiming done.
+
+**Prior:** Humanoid + room revamp shipped to `main` (sprite chrome, room
+atmospherics, motion polish). Tests 131/131, build green. Ready for `v0.2.0` tag.
 
 Background: the dashboard is a TypeScript + Ink + React (web) stack tailing
 Claude Code hook events from multiple projects simultaneously. Repo is
@@ -48,6 +58,7 @@ See `~/.claude-command-central/projects.json`. Currently: `claude-command-centra
 
 ## Recently completed (post-MVP)
 
+- **Runtime theme system + scene-defect round 1** *(2026-06-23, branch — PR pending)* — single-source-of-truth theme registry (`web/src/theme/`) with three switchable, localStorage-persisted themes (neon-noir / amber-crt / clay); `ThemeProvider` overrides Tailwind `--color-*` at runtime and feeds `phaseHex` to rooms; TopBar switcher; named easing tokens + `prefers-reduced-motion`. Showcase screenshots + README gallery. Scene fixes: deerstalker hat moved into the sprite head group so it tracks the head-scan (was a detached overlay); build-bay tool rack moved below the room header; clay reworked from a broken light palette into a readable warm-dark "terracotta dusk". Remaining work tracked in `docs/SCENE-DEFECTS.md`. All fixes browser-verified before commit.
 - **Mission card redesign — deep substrate + accent rail + engraved badge** *(2026-04-27)* — replaced the saturated project-tinted card body with a deep ink substrate (`ink-900`/`ink-800`). Per-project hue now lives only on a 4 px neon-cored left rail, the badge glyph, and a 2.4 s breathing halo whose peak alpha is capped at `${color}55` (down from the prior `${color}AA`/`${color}DD` washes that drowned the body text). Real elevation comes from a 4-layer shadow stack (top-rim highlight, bottom inner shadow, floor hairline, drop). Badge moved from a flat tinted tile to an engraved plate sitting INTO the card, with the glyph in the project hue rather than white. Type hierarchy realigned so the objective body is the brightest element on the card. External component contract unchanged. Captured as `K-PAT-002` (substrate-flip pattern) and `K-PIT-002` (the `npm run build:web` ≠ deployable artifact gotcha that cost a debug round-trip during this work). Browser-verified before commit per the post-Rive lesson.
 - **Mission strip — running emphasis + stale-card filter** *(2026-04-27)* — running mission cards (any project with `counts.live > 0`) now render with a static multi-tone gradient in the project hue, a 4 px left-edge accent stripe with neon drop-shadow, and a soft static halo. White text + heavy black text-shadow keeps the typography sharp over the saturated fill. The strip is now strictly "what's happening right now" — completed missions linger 4 s for the celebration burst then drop off entirely; the header counter (`N RUNNING · N DONE`) owns the historical tally. New `.claude/knowledge/` knowledge base bootstrapped with three entries (motion-vs-static dashboard pattern, `CLAUDE_CONFIG_DIR` migration pitfall, `.claude.json` per-project state quirk).
 - **Subagent team visibility** — `SubagentStart` / `SubagentStop` hooks emit a dedicated agent card per subagent using `agent_type` as the name and auto-routing to a phase based on the subagent's role (`*-reviewer` → REVIEW, `*-test*` → TEST, `*-architect`/`explore` → PLAN, etc.). Each teammate shows up in the office under its own name.
