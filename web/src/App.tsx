@@ -41,7 +41,7 @@ export function App() {
   }, [feedCollapsed]);
 
   return (
-    <div className="relative h-screen w-screen overflow-hidden scanlines" style={{ color: '#f5f5ff' }}>
+    <div className="relative h-screen w-screen overflow-hidden scanlines" style={{ color: 'var(--ccc-text)' }}>
       <div className="absolute inset-0 grid-backdrop opacity-60 pointer-events-none" />
       <div className="relative z-10 h-full flex flex-col p-4 gap-3">
         <TopBar

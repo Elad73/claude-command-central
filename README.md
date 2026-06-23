@@ -25,6 +25,17 @@ The dashboard runs entirely on your local machine, reads append-only JSONL feed 
 
 ---
 
+## Themes
+
+CCC ships **switchable visual themes** — pick one from the top bar; your choice persists. See [`DESIGN.md`](DESIGN.md) for the theme architecture.
+
+| Neon Noir *(default)* | Amber CRT | Clay |
+| :---: | :---: | :---: |
+| ![Neon Noir theme](docs/screenshots/themes/neon-noir.png) | ![Amber CRT theme](docs/screenshots/themes/amber-crt.png) | ![Clay theme](docs/screenshots/themes/clay.png) |
+| Cyberpunk control room | Retro phosphor terminal | Warm editorial light |
+
+---
+
 ## Features
 
 **Six theatrical rooms, one per workflow phase:**

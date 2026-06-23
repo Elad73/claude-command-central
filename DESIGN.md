@@ -198,8 +198,21 @@ Design quality only earns stars once it's *captured and trivially tryable*. Orde
 
 - ✅ Philosophy, token-tier plan, theme set, and motion system specified (this doc).
 - ✅ Showcase screenshots captured (`docs/screenshots/`).
-- ⬜ Token consolidation into a single source of truth.
-- ⬜ Theme registry + provider + switcher.
-- ⬜ `amber-crt`, `clay` themes + sprite skinning.
-- ⬜ Motion budget (focal hierarchy + orchestrated entrance + reduced-motion).
+- ✅ Token consolidation — single source of truth in `web/src/theme/registry.ts`;
+  Tailwind `--color-*` overridden at runtime; `phaseHex` fed via context.
+- ✅ Theme registry + `ThemeProvider` + TopBar switcher (persists to localStorage).
+- ✅ `neon-noir`, `amber-crt`, `clay` themes ship and switch live.
+- ✅ Reduced-motion gate (`prefers-reduced-motion`) + named easing tokens.
+- 🟡 **Follow-up: robot hues are theme-independent.** Agents are colored by
+  `projectColor()` (an HSL hash), so they stay vivid across themes. Route project
+  color through the active theme (sat/lightness bounds or a per-theme hue map) so
+  robots feel native to `clay`/`amber-crt`.
+- 🟡 **Follow-up: `clay` scene art.** Room volumetric light washes were drawn for a
+  dark stage and read as bright pastel on cream. Needs a light-mode scene pass
+  (reduce/treat washes per `prefers-color-scheme`/theme).
+- 🟡 **Follow-up: sprite skinning.** `AgentSprite` still renders one chrome style;
+  add a per-theme `sprite` skin (matte for `clay`, phosphor wireframe for `amber-crt`).
+- 🟡 **Follow-up: remaining inline accents.** `LiveFeed.tsx` and parts of `TopBar`
+  still hardcode `#00f5ff`; migrate to `var(--ccc-accent)` for full retint.
+- ⬜ Motion budget (focal hierarchy + orchestrated entrance).
 - ⬜ Hero GIF + frictionless try + README rewrite.

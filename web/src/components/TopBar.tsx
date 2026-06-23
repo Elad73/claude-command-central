@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { FeedSource, FlowState, DashboardEvent, ProjectMission } from '../types';
+import { useTheme } from '../theme/ThemeProvider';
 import { ProjectChip } from './ProjectChip';
 
 interface Props {
@@ -45,15 +46,20 @@ export function TopBar({
         <div className="flex items-baseline gap-4">
           <span
             className="font-display font-black text-2xl tracking-widest"
-            style={{ color: '#00f5ff', textShadow: '0 0 8px #00f5ff, 0 0 20px #00f5ff' }}
+            style={{
+              color: 'var(--ccc-accent)',
+              textShadow:
+                '0 0 8px color-mix(in srgb, var(--ccc-accent) 70%, transparent), 0 0 20px color-mix(in srgb, var(--ccc-accent) 50%, transparent)',
+            }}
           >
             CCC //
           </span>
-          <span className="font-display text-lg tracking-wider" style={{ color: '#e5e7ff' }}>
+          <span className="font-display text-lg tracking-wider" style={{ color: 'var(--ccc-text)' }}>
             {flow.title}
           </span>
         </div>
         <div className="flex items-center gap-6 text-xs uppercase tracking-widest">
+          <ThemeSwitcher />
           <WarmUpButton inject={inject} />
           <AggregateBadge {...aggregate} />
           <ProgressBadge value={flow.progress} />
@@ -63,8 +69,8 @@ export function TopBar({
 
       {/* Objective line */}
       {flow.objective && (
-        <div className="flex items-start gap-2 font-mono text-xs" style={{ color: '#e5e7ff' }}>
-          <span className="tracking-widest" style={{ color: '#00f5ffBB' }}>
+        <div className="flex items-start gap-2 font-mono text-xs" style={{ color: 'var(--ccc-text)' }}>
+          <span className="tracking-widest" style={{ color: 'var(--ccc-accent)' }}>
             OBJECTIVE //
           </span>
           <span className="truncate">{flow.objective}</span>
@@ -88,6 +94,50 @@ export function TopBar({
         </div>
       )}
     </div>
+  );
+}
+
+/**
+ * Theme switcher — cycles the registered visual themes (neon-noir → amber-crt →
+ * clay → …). The active theme persists to localStorage via the ThemeProvider.
+ * A swatch row previews each theme's accent so the control reads at a glance.
+ */
+function ThemeSwitcher() {
+  const { theme, themes, cycle } = useTheme();
+
+  return (
+    <button
+      type="button"
+      onClick={cycle}
+      title={`Theme: ${theme.name} (${theme.blurb}) — click to cycle`}
+      className="flex items-center gap-2 font-display tracking-widest font-bold uppercase rounded-md transition-all"
+      style={{
+        fontSize: 11,
+        padding: '6px 12px',
+        background: 'color-mix(in srgb, var(--ccc-accent) 10%, transparent)',
+        border: '1px solid color-mix(in srgb, var(--ccc-accent) 45%, transparent)',
+        color: 'var(--ccc-accent)',
+        cursor: 'pointer',
+      }}
+    >
+      <span aria-hidden style={{ display: 'inline-flex', gap: 3 }}>
+        {themes.map((t) => (
+          <span
+            key={t.id}
+            style={{
+              width: 8,
+              height: 8,
+              borderRadius: '50%',
+              background: t.vars['--ccc-accent'],
+              outline:
+                t.id === theme.id ? '1px solid var(--ccc-text)' : '1px solid transparent',
+              outlineOffset: 1,
+            }}
+          />
+        ))}
+      </span>
+      <span>{theme.name}</span>
+    </button>
   );
 }
 
