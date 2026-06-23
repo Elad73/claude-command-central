@@ -32,7 +32,7 @@ CCC ships **switchable visual themes** — pick one from the top bar; your choic
 | Neon Noir *(default)* | Amber CRT | Clay |
 | :---: | :---: | :---: |
 | ![Neon Noir theme](docs/screenshots/themes/neon-noir.png) | ![Amber CRT theme](docs/screenshots/themes/amber-crt.png) | ![Clay theme](docs/screenshots/themes/clay.png) |
-| Cyberpunk control room | Retro phosphor terminal | Warm editorial light |
+| Cyberpunk control room | Retro phosphor terminal | Warm terracotta dusk |
 
 ---
 

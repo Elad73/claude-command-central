@@ -105,42 +105,43 @@ const amberCrt: Theme = {
 };
 
 // ---------------------------------------------------------------------------
-// clay — warm, editorial, "Anthropic" light mode. Bone substrate + terracotta.
-//   NOTE: v1 retints chrome/cards/text correctly; the office scenes were drawn
-//   for a dark stage and will read softer on light until the scene art pass.
+// clay — "Terracotta Dusk". Warm, earthy mood. A deep warm substrate (not light)
+//   so the scenes' additive glow/light-washes — which are drawn for a dark stage
+//   — read correctly. Accents are warm but saturated enough to glow on the dusk
+//   background, giving a cohesive workshop-at-sunset feel distinct from the cold
+//   neon-noir and the monochrome amber-crt.
 // ---------------------------------------------------------------------------
 const clay: Theme = {
   id: 'clay',
   name: 'Clay',
-  blurb: 'Warm editorial light',
+  blurb: 'Warm terracotta dusk',
   vars: {
-    // "ink" ramp inverts: darkest token = body bg (lightest), surfaces step down.
-    '--color-ink-950': '#f4efe6',
-    '--color-ink-900': '#ece4d6',
-    '--color-ink-800': '#e2d7c4',
-    '--color-ink-700': '#d4c6ad',
-    '--color-ink-600': '#c2b193',
-    '--color-neon-cyan': '#3f7d6e',
-    '--color-neon-blue': '#3f7d6e',
-    '--color-neon-magenta': '#9c5a8a',
-    '--color-neon-pink': '#c0492f',
-    '--color-neon-amber': '#b8862b',
-    '--color-neon-green': '#5e8c4a',
-    '--color-neon-purple': '#9c5a8a',
-    '--ccc-accent': '#c4612f',
-    '--ccc-text': '#2a2118',
-    '--ccc-text-muted': '#6b5d49',
-    '--ccc-scanline-alpha': '0',
+    '--color-ink-950': '#150d09',
+    '--color-ink-900': '#1e1410',
+    '--color-ink-800': '#2a1d16',
+    '--color-ink-700': '#3a281f',
+    '--color-ink-600': '#4d372b',
+    '--color-neon-cyan': '#4fb3a0',
+    '--color-neon-blue': '#4fb3a0',
+    '--color-neon-magenta': '#cf7da0',
+    '--color-neon-pink': '#e0593f',
+    '--color-neon-amber': '#e0a93f',
+    '--color-neon-green': '#9ac45a',
+    '--color-neon-purple': '#cf7da0',
+    '--ccc-accent': '#e07a4f',
+    '--ccc-text': '#f1e5d6',
+    '--ccc-text-muted': '#a08a78',
+    '--ccc-scanline-alpha': '0.02',
     '--ccc-motion-scale': '1',
     ...EASE,
   },
   phaseHex: {
-    PROMPT: '#3f7d6e',
-    PLAN: '#c4612f',
-    BUILD: '#b8862b',
-    REVIEW: '#9c5a8a',
-    TEST: '#5e8c4a',
-    DEPLOY: '#c0492f',
+    PROMPT: '#4fb3a0',
+    PLAN: '#e07a4f',
+    BUILD: '#e0a93f',
+    REVIEW: '#cf7da0',
+    TEST: '#9ac45a',
+    DEPLOY: '#e0593f',
   },
 };
 

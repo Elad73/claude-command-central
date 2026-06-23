@@ -158,6 +158,27 @@ export function AgentSprite({ color, status, phase, size = 'lg' }: Props) {
           <line x1={78} y1={39} x2={78} y2={42} stroke={color} strokeWidth={1} opacity={0.6} />
           <line x1={78} y1={44} x2={78} y2={47} stroke={color} strokeWidth={1} opacity={0.6} />
 
+          {/* DEERSTALKER HAT (REVIEW only) — lives INSIDE the head group so it
+              tracks every head/body motion instead of floating as a detached
+              overlay. Sits on the helmet crown (brim ~y22 = helmet top). */}
+          {phase === 'REVIEW' && (
+            <g aria-hidden>
+              {/* Ear flaps (behind the crown) */}
+              <path d="M 41 20 Q 37 28 41 38 Q 47 40 49 32 L 49 24 Z" fill="#6b4a2a" stroke="#2a1a10" strokeWidth={1} />
+              <path d="M 79 20 Q 83 28 79 38 Q 73 40 71 32 L 71 24 Z" fill="#6b4a2a" stroke="#2a1a10" strokeWidth={1} />
+              {/* Brim */}
+              <path d="M 34 22 L 44 12 Q 60 5 76 12 L 86 22 Q 74 27 60 27 Q 46 27 34 22 Z" fill="#7a5530" stroke="#2a1a10" strokeWidth={1.2} />
+              {/* Crown with tartan-check hint */}
+              <path d="M 46 9 Q 60 -2 74 9 L 76 22 Q 60 25 44 22 Z" fill="#7a5530" stroke="#2a1a10" strokeWidth={1.2} />
+              <line x1={49} y1={7} x2={71} y2={7} stroke="#2a1a10" strokeWidth={0.6} opacity={0.55} />
+              <line x1={47} y1={13} x2={73} y2={13} stroke="#2a1a10" strokeWidth={0.6} opacity={0.55} />
+              <line x1={54} y1={3} x2={54} y2={20} stroke="#2a1a10" strokeWidth={0.6} opacity={0.55} />
+              <line x1={66} y1={3} x2={66} y2={20} stroke="#2a1a10" strokeWidth={0.6} opacity={0.55} />
+              {/* Top button */}
+              <circle cx={60} cy={7} r={1.8} fill="#3a2818" />
+            </g>
+          )}
+
           {/* VISOR FRAME */}
           <rect
             x={44}

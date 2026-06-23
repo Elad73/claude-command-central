@@ -99,13 +99,14 @@ star-driver ("…wait, it has skins?").
 | --- | --- | --- | --- | --- |
 | `neon-noir` | **Neon Noir** *(default, current)* | Cyberpunk control room | Deep indigo-black ink + saturated neon accents | Current SVG humanoid |
 | `amber-crt` | **Amber CRT** | Retro-terminal, 1980s ops | Near-black + monochrome amber/green phosphor, heavier scanlines, glow bloom | Same geometry, phosphor palette + flicker |
-| `anthropic-clay` | **Clay** | Warm, editorial, "Anthropic" | Bone/cream substrate, terracotta + clay accents, soft long shadows, *light mode* | Rounder, matte robots, no neon |
+| `clay` | **Clay** | Warm "terracotta dusk" | Deep warm substrate + earthy accents (teal/ochre/mauve/sage/rust) that glow on the dusk background | Current SVG humanoid (warm-tinted) |
 
-> The bold restyle you asked for is `clay` (a light, warm, fundamentally different
-> mood) and `amber-crt` (a single-phosphor retro look). `neon-noir` is the elevated
-> current style. All three share geometry where possible; only palette/texture/motion
-> and an optional sprite skin change. **This table is the thing to approve before art
-> work begins.**
+> The bold mood shift is `clay` (warm dusk) and `amber-crt` (single-phosphor retro);
+> `neon-noir` is the elevated current style. All three share geometry; only
+> palette/texture/motion change. **Note:** `clay` was initially attempted as a *light*
+> theme, but the scenes are built for a dark stage (additive light washes/glows), so
+> light mode read as bright-on-bright. Clay is therefore a warm *dark* theme; a true
+> light mode is a separate per-scene lighting effort (see SCENE-DEFECTS.md).
 
 ---
 
@@ -207,9 +208,9 @@ Design quality only earns stars once it's *captured and trivially tryable*. Orde
   `projectColor()` (an HSL hash), so they stay vivid across themes. Route project
   color through the active theme (sat/lightness bounds or a per-theme hue map) so
   robots feel native to `clay`/`amber-crt`.
-- 🟡 **Follow-up: `clay` scene art.** Room volumetric light washes were drawn for a
-  dark stage and read as bright pastel on cream. Needs a light-mode scene pass
-  (reduce/treat washes per `prefers-color-scheme`/theme).
+- ✅ **`clay` reworked to warm-dark "terracotta dusk".** The first (light) attempt
+  read bright-on-bright because scenes are dark-stage. Fixed + verified. A true
+  light mode remains a separate per-scene lighting effort (see SCENE-DEFECTS.md).
 - 🟡 **Follow-up: sprite skinning.** `AgentSprite` still renders one chrome style;
   add a per-theme `sprite` skin (matte for `clay`, phosphor wireframe for `amber-crt`).
 - 🟡 **Follow-up: remaining inline accents.** `LiveFeed.tsx` and parts of `TopBar`
