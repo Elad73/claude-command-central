@@ -2,6 +2,17 @@
 
 Live mission-control dashboard for Claude Code sessions.
 
+![CCC — a busy command center with all six phase rooms staffed by working agents](docs/screenshots/01-command-center-busy.png)
+
+> Six theatrical rooms, one per workflow phase. Agents appear, walk, build, review, stunt-fall, and launch as your Claude Code sessions progress — in real time.
+
+<details>
+<summary>More views</summary>
+
+![Multiple missions in flight across projects](docs/screenshots/02-missions-in-flight.png)
+
+</details>
+
 ---
 
 ## What is this?
