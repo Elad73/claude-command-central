@@ -12,6 +12,12 @@ interface Props {
 /** Maximum cards visible at once. Keeps the strip from running off-screen. */
 const VISIBLE_CAP = 8;
 
+/** How long a just-completed card lingers before it drops off the strip. Long
+ *  enough for the celebration sheen + particle burst (~1.4s) to play and for
+ *  the user to register "X just finished," short enough that a row of stale
+ *  DONE cards never accumulates. Header counter still shows total done count. */
+const COMPLETION_LINGER_MS = 4_000;
+
 /**
  * Shows each project's *mission* (the prompt the team is working on) as its
  * own card. Agent bubbles stay tactical (current tool call); this strip
@@ -19,9 +25,10 @@ const VISIBLE_CAP = 8;
  * reveal the full mission text — the detail popover renders via a portal to
  * `document.body` so it always paints above the Room stacking contexts below.
  *
- * Completed missions persist on the strip so a user returning from a coffee
- * break can see what each project actually finished. They sort after running
- * missions, by `completedAt` desc, capped at {@link VISIBLE_CAP}.
+ * The strip is intentionally "what's happening RIGHT NOW" — only missions
+ * with a live agent (or that completed within the last few seconds for the
+ * celebration burst) are shown. Stale DONE cards don't accumulate; the
+ * header counter ("N RUNNING · N DONE") owns the historical tally.
  */
 export function MissionStrip({ missions, agents }: Props) {
   // Track which projects we've already celebrated this session, so a snapshot
@@ -38,25 +45,17 @@ export function MissionStrip({ missions, agents }: Props) {
     seededRef.current = true;
   }
 
-  const all = Object.values(missions).filter(
-    (m) => m.objective && m.objective.trim().length > 0,
-  );
-  if (all.length === 0) return null;
+  // A monotonically-increasing tick that re-evaluates the completion-linger
+  // filter even when no new events arrive. Without it, a card that completed
+  // 4s ago would stay on screen until the next snapshot push.
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const id = window.setInterval(() => setTick((t) => t + 1), 1_000);
+    return () => window.clearInterval(id);
+  }, []);
 
-  // Running-first ordering: live work bubbles to the top, recently completed
-  // missions stack underneath in completion order, then anything else by
-  // updatedAt. Cap to keep the strip from spilling.
-  const sorted = [...all].sort((a, b) => {
-    const aDone = a.status === 'done';
-    const bDone = b.status === 'done';
-    if (aDone !== bDone) return aDone ? 1 : -1;
-    if (aDone && bDone) {
-      return (b.completedAt ?? b.updatedAt) - (a.completedAt ?? a.updatedAt);
-    }
-    return b.updatedAt - a.updatedAt;
-  });
-  const visible = sorted.slice(0, VISIBLE_CAP);
-
+  // Build agent counts first — `running` is derived from live agents, not
+  // from `mission.status`, so we need this map before we can filter.
   const activeByProject = new Map<string, { total: number; live: number }>();
   for (const a of Object.values(agents)) {
     const bucket = activeByProject.get(a.project) ?? { total: 0, live: 0 };
@@ -64,6 +63,39 @@ export function MissionStrip({ missions, agents }: Props) {
     if (a.status === 'active' || a.status === 'running') bucket.live += 1;
     activeByProject.set(a.project, bucket);
   }
+
+  // Filter to "currently relevant": live agents OR fresh-done within linger.
+  // Anything stale is dropped from the strip entirely — the header carries
+  // the persistent tally so we don't lose information, only clutter.
+  const now = Date.now();
+  const all = Object.values(missions).filter((m) => {
+    if (!m.objective || m.objective.trim().length === 0) return false;
+    const counts = activeByProject.get(m.project) ?? { total: 0, live: 0 };
+    if (counts.live > 0) return true;
+    if (
+      m.status === 'done' &&
+      m.completedAt &&
+      now - m.completedAt < COMPLETION_LINGER_MS
+    ) {
+      return true;
+    }
+    return false;
+  });
+  if (all.length === 0) return null;
+
+  // Running-first ordering: live work bubbles to the top, fresh-completed
+  // missions stack underneath in completion order. Cap to keep the strip
+  // from spilling on the rare case of many concurrent projects.
+  const sorted = [...all].sort((a, b) => {
+    const aLive = (activeByProject.get(a.project)?.live ?? 0) > 0;
+    const bLive = (activeByProject.get(b.project)?.live ?? 0) > 0;
+    if (aLive !== bLive) return aLive ? -1 : 1;
+    if (!aLive && !bLive) {
+      return (b.completedAt ?? b.updatedAt) - (a.completedAt ?? a.updatedAt);
+    }
+    return b.updatedAt - a.updatedAt;
+  });
+  const visible = sorted.slice(0, VISIBLE_CAP);
 
   return (
     <div className="flex items-stretch gap-2 flex-wrap pb-1">
@@ -121,38 +153,68 @@ function MissionCard({
       ? formatDuration(mission.completedAt - mission.startedAt)
       : null;
 
+  // CSS custom properties drive the rail, badge, and breathing halo keyframes.
+  // Project hue is now an ACCENT — the substrate is always deep ink — so the
+  // alpha stops here are intentionally lower than the previous (cdd/cff-fill)
+  // design. Peak halo alpha is c55, never higher.
+  const projectVars = {
+    '--ccc-run-c3a': `${color}3A`,
+    '--ccc-run-c55': `${color}55`,
+    '--ccc-run-caa': `${color}AA`,
+    '--ccc-run-cff': color,
+  } as React.CSSProperties;
+
+  // Class composition — base substrate first, state modifier second.
+  const cardClasses = [
+    'ccc-mission-card',
+    'relative flex items-stretch min-w-0',
+    running ? 'ccc-mission-card-running' : '',
+    done ? 'ccc-mission-card-done' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  // Muted chrome colors — these never use the project hue at high alpha.
+  // The hue lives on the rail and the badge glyph; everything else is neutral.
+  const labelColor = running ? '#7a8099' : '#5a607a';
+  const metaColor = '#9ba3bf';
+
   return (
     <motion.div
       ref={cardRef}
       animate={
         celebrating
-          ? { scale: [1, 1.08, 1] }
-          : { scale: 1 }
+          ? { scale: [1, 1.05, 1] }
+          : { scale: running ? 1.01 : 1 }
       }
       transition={
         celebrating
           ? { duration: 0.6, ease: 'easeOut', times: [0, 0.45, 1] }
-          : { duration: 0.2 }
+          : { duration: 0.25 }
       }
-      className="relative flex items-center gap-3 rounded-md border backdrop-blur-sm min-w-0 overflow-hidden"
+      className={cardClasses}
       onMouseEnter={openPopover}
       onMouseLeave={closePopover}
       style={{
-        padding: '6px 12px',
-        background: done ? `${color}10` : `${color}18`,
-        borderColor: done ? `${color}66` : `${color}AA`,
-        boxShadow: running
-          ? `0 0 12px ${color}40, inset 0 0 8px ${color}20`
-          : done
-            ? `0 0 8px ${color}25, inset 0 0 6px ${color}10`
-            : 'none',
-        opacity: done ? 0.92 : 1,
+        // Padding leaves room for the 4px left rail. Right padding generous
+        // so the done check has air. Vertical 9/8 keeps the 38px badge breathing.
+        padding: '9px 14px 8px 14px',
+        opacity: done ? 0.94 : 1,
         flex: '1 1 260px',
         minWidth: 220,
         maxWidth: 520,
         cursor: 'help',
+        // Running cards lift above their siblings so the halo can spill.
+        zIndex: running ? 2 : 0,
+        ...projectVars,
       }}
     >
+      {/* Left accent rail — the per-project identity anchor. */}
+      <span
+        aria-hidden
+        className={done ? 'ccc-mission-rail ccc-mission-rail-done' : 'ccc-mission-rail'}
+      />
+
       {/* Sheen sweep across the card on completion — single pass. */}
       {celebrating && (
         <span
@@ -171,49 +233,70 @@ function MissionCard({
       {/* Particle burst — 10 dots flying outward from card center. */}
       {celebrating && <ParticleBurst color={color} />}
 
-      {/* Project code badge */}
-      <div
-        className="flex flex-col items-center justify-center flex-shrink-0 font-display font-black"
-        style={{
-          width: 44,
-          height: 36,
-          borderRadius: 6,
-          background: `${color}22`,
-          border: `1px solid ${color}`,
-          color: '#ffffff',
-          textShadow: `0 0 8px ${color}`,
-          fontSize: 13,
-          letterSpacing: '0.1em',
-        }}
-      >
+      {/* Engraved project-code badge — sits INTO the card surface. */}
+      <div className="ccc-mission-badge font-display" style={{ marginRight: 12 }}>
         {code}
       </div>
 
-      <div className="flex flex-col min-w-0 flex-1">
+      <div className="flex flex-col min-w-0 flex-1 relative justify-center">
         <div className="flex items-center gap-2">
           <span
-            className="font-display text-[0.65rem] tracking-[0.25em] font-bold uppercase"
-            style={{ color: `${color}DD`, textShadow: `0 0 6px ${color}` }}
+            className="font-display font-bold uppercase"
+            style={{
+              fontSize: '0.6rem',
+              letterSpacing: '0.32em',
+              color: labelColor,
+              // No glow — pure muted chrome. The substrate carries the contrast.
+            }}
           >
             Mission
           </span>
           {done ? <DonePill /> : <StatusPip status={mission.status} color={color} />}
           {counts.total > 0 && !done && (
-            <span className="font-mono text-[0.65rem]" style={{ color: `${color}BB` }}>
-              {counts.live}/{counts.total}▲
+            <span
+              className="font-mono"
+              style={{
+                fontSize: '0.65rem',
+                color: metaColor,
+                letterSpacing: '0.04em',
+              }}
+            >
+              {counts.live}<span style={{ opacity: 0.4 }}>/</span>{counts.total}
+              <span style={{ marginLeft: 3, color: '#7a8099' }}>▲</span>
             </span>
           )}
         </div>
-        <div className="font-mono text-xs truncate" style={{ color: '#e5e7ff' }}>
+        {/* The objective is the hero — brightest, largest single element on
+         * the card. No text-shadow: the deep ink substrate is doing the
+         * contrast work. Warm near-white (#e8eaff) over ink-900/800 reads
+         * crisp without "shouting". */}
+        <div
+          className="font-mono truncate"
+          style={{
+            color: '#e8eaff',
+            fontSize: '0.84rem',
+            lineHeight: 1.35,
+            marginTop: 2,
+            fontWeight: 400,
+          }}
+        >
           {mission.objective}
         </div>
         {done && (
           <div
-            className="font-mono text-[0.65rem] mt-0.5"
-            style={{ color: '#39ff14', textShadow: '0 0 4px #39ff1466' }}
+            className="font-mono"
+            style={{
+              fontSize: '0.62rem',
+              marginTop: 3,
+              color: '#39ff14cc',
+              letterSpacing: '0.03em',
+            }}
           >
             <span style={{ marginRight: 4 }}>✓</span>
-            {duration ?? '—'} · {counts.total} agent{counts.total === 1 ? '' : 's'} ·{' '}
+            {duration ?? '—'}
+            <span style={{ color: '#39ff1455', margin: '0 6px' }}>·</span>
+            {counts.total} agent{counts.total === 1 ? '' : 's'}
+            <span style={{ color: '#39ff1455', margin: '0 6px' }}>·</span>
             {mission.actionCount} action{mission.actionCount === 1 ? '' : 's'}
           </div>
         )}
@@ -224,13 +307,14 @@ function MissionCard({
           aria-hidden
           className="absolute"
           style={{
-            top: 4,
-            right: 6,
-            fontSize: 14,
+            top: 5,
+            right: 8,
+            fontSize: 11,
             color: '#39ff14',
-            textShadow: '0 0 6px #39ff14, 0 0 12px #39ff1488',
+            textShadow: '0 0 6px rgba(57,255,20,0.7)',
             fontWeight: 900,
             lineHeight: 1,
+            letterSpacing: 0,
           }}
           title="Mission complete"
         >
@@ -396,10 +480,22 @@ function StatusPip({ status, color }: { status: string; color: string }) {
         : status === 'running'
           ? '#39ff14'
           : color;
+  // Real pill plate behind the dot+label so it reads as a contained meta token,
+  // not as floating text. Background is a sliver of the status hue over deep
+  // ink; border picks up the same hue at low alpha. Sits flush with the
+  // MISSION label baseline.
   return (
     <span
-      className="inline-flex items-center gap-1 font-mono uppercase tracking-wider"
-      style={{ fontSize: 9, color: col }}
+      className="inline-flex items-center gap-1 font-mono uppercase"
+      style={{
+        fontSize: 9,
+        color: col,
+        letterSpacing: '0.14em',
+        padding: '2px 7px 2px 6px',
+        borderRadius: 999,
+        background: 'rgba(0, 0, 0, 0.4)',
+        border: `1px solid ${col}44`,
+      }}
     >
       <span
         className="inline-block rounded-full"

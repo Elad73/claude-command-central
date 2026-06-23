@@ -673,12 +673,25 @@ body {
 }
 
 /* ---------------------------------------------------------------------------
- * MISSION STRIP — completion celebration.
+ * MISSION STRIP — layered cyber card (substrate / rail / content / halo).
  *
- *   ccc-mission-sheen — single-pass diagonal gradient sweep across a card
- *                       border on a running→done transition. Namespaced with
- *                       `ccc-` so it can't collide with scene keyframes above.
+ * The redesign principle: project hue is an ACCENT (rail + halo), not a fill.
+ * The card body is always a deep ink plate so the objective text reads as
+ * crisp near-white on dark — no white-over-bright. Elevation comes from a
+ * stacked shadow recipe (top-rim highlight, bottom inner shadow, floor
+ * hairline, drop), not from glow alone.
+ *
+ *   ccc-mission-card        — base shell. Deep substrate + real elevation.
+ *   ccc-mission-card-running — adds substrate lift + breathing project halo.
+ *   ccc-mission-card-done   — green accent + soft underglow on completion.
+ *   ccc-mission-rail        — 4px left accent rail in the project hue.
+ *   ccc-mission-badge       — engraved glyph plate (sits INTO the card).
+ *   ccc-mission-sheen       — single-pass diagonal sweep on completion.
+ *   ccc-mission-halo-pulse  — gentle 2.4s breath on running cards.
+ *
+ * Namespaced with `ccc-mission-` so they can't collide with scene keyframes.
  * ------------------------------------------------------------------------- */
+
 @keyframes ccc-mission-sheen-sweep {
   0%   { transform: translateX(-120%); opacity: 0; }
   20%  { opacity: 1; }
@@ -688,4 +701,101 @@ body {
 
 .ccc-mission-sheen {
   animation: ccc-mission-sheen-sweep 900ms ease-out 1 forwards;
+}
+
+/* Halo breath — alpha cycles between c33 and c66 (peak capped well below
+ * caa/cdd of the previous design). The body text contrast never drops. */
+@keyframes ccc-mission-halo-pulse {
+  0%, 100% {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.05),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.35),
+      0 1px 0 rgba(0, 0, 0, 0.55),
+      0 6px 16px -4px rgba(0, 0, 0, 0.55),
+      0 0 18px -6px var(--ccc-run-c3a);
+  }
+  50% {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.05),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.35),
+      0 1px 0 rgba(0, 0, 0, 0.55),
+      0 6px 16px -4px rgba(0, 0, 0, 0.55),
+      0 0 26px -2px var(--ccc-run-c55);
+  }
+}
+
+/* Base card — deep ink substrate, layered elevation. Project hue lives ONLY
+ * on the rail, the badge glyph, and the running halo. */
+.ccc-mission-card {
+  position: relative;
+  background-color: #0a0a18; /* ink-900 */
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),   /* top rim highlight */
+    inset 0 -1px 0 rgba(0, 0, 0, 0.35),        /* bottom inner shadow */
+    0 1px 0 rgba(0, 0, 0, 0.55),               /* floor hairline */
+    0 6px 16px -4px rgba(0, 0, 0, 0.55);       /* drop */
+  overflow: hidden;
+}
+
+/* Running — substrate lifts from ink-900 to ink-800, halo breathes. */
+.ccc-mission-card-running {
+  background-color: #11112a; /* ink-800 */
+  border-color: var(--ccc-run-c55);
+  animation: ccc-mission-halo-pulse 2400ms ease-in-out infinite;
+}
+
+/* Done — green underglow, faint enough to read as "settled" not "alarming". */
+.ccc-mission-card-done {
+  border-color: rgba(57, 255, 20, 0.28);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.35),
+    0 1px 0 rgba(0, 0, 0, 0.55),
+    0 6px 16px -4px rgba(0, 0, 0, 0.55),
+    0 2px 10px -2px rgba(57, 255, 20, 0.28);
+}
+
+/* Left accent rail — 4px solid project hue, neon-cored.
+ * This is the per-project identity anchor (replaces the tinted fill). */
+.ccc-mission-rail {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--ccc-run-cff);
+  box-shadow:
+    0 0 8px var(--ccc-run-caa),
+    inset 0 0 4px rgba(255, 255, 255, 0.4);
+}
+
+.ccc-mission-rail-done {
+  background: #39ff14;
+  box-shadow:
+    0 0 8px rgba(57, 255, 20, 0.7),
+    inset 0 0 4px rgba(255, 255, 255, 0.4);
+}
+
+/* Engraved badge — sits INTO the card. Deeper than the parent surface,
+ * top hairline highlight, inner shadow. Glyph in the project hue, not white. */
+.ccc-mission-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 30px;
+  border-radius: 5px;
+  background: #05050d; /* ink-950 — deeper than the card */
+  border: 1px solid var(--ccc-run-c55);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 0 6px rgba(0, 0, 0, 0.6);
+  color: var(--ccc-run-cff);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-shadow: 0 0 8px var(--ccc-run-c55);
+  flex-shrink: 0;
 }
