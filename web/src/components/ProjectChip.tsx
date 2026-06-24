@@ -1,4 +1,7 @@
-/** Deterministic neon hue per project slug. */
+import { useTheme } from '../theme/ThemeProvider';
+import type { RobotColor } from '../theme/registry';
+
+/** Deterministic hue per project slug (0–359). */
 const hashHue = (s: string): number => {
   let h = 0;
   for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) & 0xffff;
@@ -18,9 +21,27 @@ const hslToHex = (h: number, s: number, l: number): string => {
   return `#${f(0)}${f(8)}${f(4)}`;
 };
 
-/** Returns a hex color so callers can safely append alpha suffixes like `${color}AA`. */
-export const projectColor = (slug: string): string => {
-  return hslToHex(hashHue(slug), 90, 65);
+/** Default robot color treatment (matches neon-noir) for theme-less callers. */
+const DEFAULT_ROBOT: RobotColor = { sat: 90, light: 65 };
+
+/**
+ * Deterministic per-project hex. `robot` (from the active theme) remaps the
+ * hashed hue into the theme's band and sets saturation/lightness, so robots fit
+ * each theme while staying distinguishable per project. Returns hex so callers
+ * can safely append alpha suffixes like `${color}AA`.
+ */
+export const projectColor = (slug: string, robot: RobotColor = DEFAULT_ROBOT): string => {
+  const raw = hashHue(slug);
+  const hue = robot.hueRange
+    ? robot.hueRange[0] + (raw % Math.max(1, robot.hueRange[1] - robot.hueRange[0]))
+    : raw;
+  return hslToHex(hue, robot.sat, robot.light);
+};
+
+/** Hook form: returns a `projectColor` bound to the active theme's robot params. */
+export const useProjectColor = (): ((slug: string) => string) => {
+  const { theme } = useTheme();
+  return (slug: string) => projectColor(slug, theme.robot);
 };
 
 /**
@@ -49,7 +70,7 @@ interface Props {
 }
 
 export function ProjectChip({ project, active = false, size = 'md', compact = false }: Props) {
-  const color = projectColor(project);
+  const color = useProjectColor()(project);
   const padY = size === 'sm' ? 2 : 4;
   const padX = size === 'sm' ? (compact ? 5 : 6) : 10;
   const fontSize = size === 'sm' ? 10 : 11;
