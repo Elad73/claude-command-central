@@ -26,6 +26,20 @@
   --color-phase-deploy: var(--color-neon-pink);
 }
 
+/* Theme chrome + motion tokens. These defaults match the `neon-noir` theme;
+ * ThemeProvider overrides them on <html> at runtime (see theme/registry.ts).
+ * Keeping defaults here means correct first paint before JS hydrates. */
+:root {
+  --ccc-accent: #00f5ff;
+  --ccc-text: #f5f5ff;
+  --ccc-text-muted: #9ca3af;
+  --ccc-scanline-alpha: 0.015;
+  --ccc-motion-scale: 1;
+  --ccc-ease-contact: cubic-bezier(0.55, 0.06, 0.35, 1.1);
+  --ccc-ease-settle: cubic-bezier(0.34, 1.2, 0.5, 1);
+  --ccc-ease-ambient: ease-in-out;
+}
+
 html,
 body,
 #root {
@@ -56,8 +70,8 @@ body {
   inset: 0;
   background: repeating-linear-gradient(
     0deg,
-    rgba(255, 255, 255, 0.015) 0px,
-    rgba(255, 255, 255, 0.015) 1px,
+    rgba(255, 255, 255, var(--ccc-scanline-alpha)) 0px,
+    rgba(255, 255, 255, var(--ccc-scanline-alpha)) 1px,
     transparent 1px,
     transparent 3px
   );
@@ -513,48 +527,54 @@ body {
 
 /* Agent body wrapper: translation + rotation across the full cycle.
  * Percentages map to the timing above (18% = 1.08s of 6s, etc). */
+/* Redesigned for readability: the agent stays UPRIGHT (a controlled stunt fall),
+ * lands FEET-FIRST into the crash mat, sinks as the mat absorbs the impact,
+ * bounces, then stands on top and celebrates. No head-down crumple / sprawl —
+ * those read as "crashed", the opposite of the intended "safely caught (QA)". */
 @keyframes test-agent-cycle {
-  /* FALL — start at ceiling, head-down */
-  0%    { transform: translateY(0) rotate(180deg) scale(1);    opacity: 1; }
-  /* Accelerating: small delta early (slow) → larger delta later (fast) */
-  8%    { transform: translateY(calc(var(--fall) * 0.18)) rotate(192deg) scale(1); opacity: 1; }
-  14%   { transform: translateY(calc(var(--fall) * 0.58)) rotate(208deg) scale(1); opacity: 1; }
-  /* IMPACT — fully landed, crumpled sideways */
-  18%   { transform: translateY(var(--fall)) rotate(240deg) scale(1, 0.95); opacity: 1; }
-  /* SPRAWL — settle diagonally, tiny wobble */
-  27%   { transform: translateY(calc(var(--fall) - 4px)) rotate(55deg) scale(1, 0.98); opacity: 0.92; }
-  40%   { transform: translateY(calc(var(--fall) - 6px)) rotate(48deg) scale(1); opacity: 0.92; }
-  46%   { transform: translateY(calc(var(--fall) - 4px)) rotate(52deg) scale(1); opacity: 0.92; }
-  /* STANDUP — rotate upright, hop up off the cushion */
-  56%   { transform: translateY(calc(var(--fall) - 10px)) rotate(20deg) scale(1); opacity: 1; }
-  63%   { transform: translateY(calc(var(--fall) - 18px)) rotate(0deg)  scale(1); opacity: 1; }
-  /* THUMBSUP — standing tall, tiny triumph bob */
-  70%   { transform: translateY(calc(var(--fall) - 16px)) rotate(0deg)  scale(1); opacity: 1; }
-  78%   { transform: translateY(calc(var(--fall) - 20px)) rotate(0deg)  scale(1); opacity: 1; }
-  83%   { transform: translateY(calc(var(--fall) - 16px)) rotate(0deg)  scale(1); opacity: 1; }
-  /* RESET — fade out standing, return invisibly to the hatch */
-  86%   { transform: translateY(calc(var(--fall) - 16px)) rotate(0deg)  scale(1); opacity: 0; }
-  99%   { transform: translateY(0) rotate(180deg) scale(1);    opacity: 0; }
-  100%  { transform: translateY(0) rotate(180deg) scale(1);    opacity: 1; }
+  /* PERCH — sit in the hatch, upright */
+  0%, 9%  { transform: translateY(0) rotate(0deg); opacity: 1; }
+  /* FALL — upright with a slight wind tilt, accelerating */
+  16%  { transform: translateY(calc(var(--fall) * 0.16)) rotate(-7deg); opacity: 1; }
+  25%  { transform: translateY(calc(var(--fall) * 0.55)) rotate(5deg);  opacity: 1; }
+  /* TOUCHDOWN — feet meet the mat, upright */
+  32%  { transform: translateY(var(--fall)) rotate(0deg); opacity: 1; }
+  /* SINK — ride the mat down as it absorbs the impact */
+  38%  { transform: translateY(calc(var(--fall) + 12px)) rotate(0deg); opacity: 1; }
+  /* BOUNCE — the mat throws the agent back up */
+  46%  { transform: translateY(calc(var(--fall) - 16px)) rotate(0deg); opacity: 1; }
+  53%  { transform: translateY(calc(var(--fall) - 2px))  rotate(0deg); opacity: 1; }
+  /* STAND — settle standing on top of the mat */
+  68%  { transform: translateY(calc(var(--fall) - 6px))  rotate(0deg); opacity: 1; }
+  /* CELEBRATE — small triumph bob, holds for the thumbs-up window */
+  74%  { transform: translateY(calc(var(--fall) - 10px)) rotate(0deg); opacity: 1; }
+  80%  { transform: translateY(calc(var(--fall) - 6px))  rotate(0deg); opacity: 1; }
+  88%  { transform: translateY(calc(var(--fall) - 6px))  rotate(0deg); opacity: 1; }
+  /* RESET — fade, return invisibly to the hatch for the next take */
+  92%  { transform: translateY(calc(var(--fall) - 6px))  rotate(0deg); opacity: 0; }
+  99%  { transform: translateY(0) rotate(0deg); opacity: 0; }
+  100% { transform: translateY(0) rotate(0deg); opacity: 1; }
 }
 
 /* Cushion squash: still most of the cycle, compresses on impact,
  * overshoots back, settles. Transform-origin = bottom center. */
 @keyframes test-cushion-squash {
-  0%, 17%    { transform: scaleY(1); }
-  19%        { transform: scaleY(0.72); }
-  22%        { transform: scaleY(1.06); }
-  26%        { transform: scaleY(0.97); }
-  30%, 100%  { transform: scaleY(1); }
+  0%, 31%    { transform: scaleY(1); }
+  /* deep absorb synced to the agent sinking in (38%) */
+  38%        { transform: scaleY(0.5); }
+  /* throw it back — rebound overshoot synced to the bounce (46%) */
+  46%        { transform: scaleY(1.1); }
+  53%        { transform: scaleY(0.96); }
+  60%, 100%  { transform: scaleY(1); }
 }
 
 /* Splash burst — invisible most of the cycle, radiates outward on impact. */
 @keyframes test-splash {
-  0%, 17%   { transform: scale(0);   opacity: 0; }
-  19%       { transform: scale(0.6); opacity: 1; }
-  23%       { transform: scale(1.2); opacity: 0.85; }
-  28%       { transform: scale(1.6); opacity: 0; }
-  100%      { transform: scale(1.6); opacity: 0; }
+  0%, 31%   { transform: scale(0);   opacity: 0; }
+  34%       { transform: scale(0.6); opacity: 0.9; }
+  39%       { transform: scale(1.2); opacity: 0.7; }
+  44%       { transform: scale(1.7); opacity: 0; }
+  100%      { transform: scale(1.7); opacity: 0; }
 }
 
 /* Impact "*" mark — flickers briefly during the sprawl window. */
@@ -568,22 +588,22 @@ body {
 
 /* Thumbs-up glyph — dormant, pops in during the celebration window. */
 @keyframes test-thumbsup {
-  0%, 63%   { transform: scale(0)    translateY(6px)  rotate(-12deg); opacity: 0; }
-  67%       { transform: scale(1.3)  translateY(-2px) rotate(4deg);   opacity: 1; }
-  72%       { transform: scale(0.95) translateY(0)    rotate(0deg);   opacity: 1; }
-  76%       { transform: scale(1.05) translateY(-1px) rotate(2deg);   opacity: 1; }
-  82%       { transform: scale(1)    translateY(0)    rotate(0deg);   opacity: 1; }
-  85%       { transform: scale(0.85) translateY(2px)  rotate(-4deg);  opacity: 0; }
+  0%, 70%   { transform: scale(0)    translateY(6px)  rotate(-12deg); opacity: 0; }
+  74%       { transform: scale(1.3)  translateY(-2px) rotate(4deg);   opacity: 1; }
+  78%       { transform: scale(0.95) translateY(0)    rotate(0deg);   opacity: 1; }
+  82%       { transform: scale(1.05) translateY(-1px) rotate(2deg);   opacity: 1; }
+  88%       { transform: scale(1)    translateY(0)    rotate(0deg);   opacity: 1; }
+  91%       { transform: scale(0.85) translateY(2px)  rotate(-4deg);  opacity: 0; }
   100%      { transform: scale(0)    translateY(6px)  rotate(-12deg); opacity: 0; }
 }
 
 /* Trap-door flap — closed, slams open during the fall window, closes after. */
 @keyframes test-trapdoor {
-  0%        { transform: rotate(0deg); }
-  4%        { transform: rotate(-80deg); }
-  15%       { transform: rotate(-72deg); }
-  19%       { transform: rotate(-30deg); }
-  24%, 100% { transform: rotate(0deg); }
+  0%, 8%    { transform: rotate(0deg); }
+  11%       { transform: rotate(-80deg); }
+  20%       { transform: rotate(-72deg); }
+  26%       { transform: rotate(-30deg); }
+  32%, 100% { transform: rotate(0deg); }
 }
 
 /* ---------------------------------------------------------------------------
@@ -728,7 +748,7 @@ body {
  * on the rail, the badge glyph, and the running halo. */
 .ccc-mission-card {
   position: relative;
-  background-color: #0a0a18; /* ink-900 */
+  background-color: var(--color-ink-900);
   border: 1px solid rgba(255, 255, 255, 0.04);
   border-radius: 8px;
   box-shadow:
@@ -741,7 +761,7 @@ body {
 
 /* Running — substrate lifts from ink-900 to ink-800, halo breathes. */
 .ccc-mission-card-running {
-  background-color: #11112a; /* ink-800 */
+  background-color: var(--color-ink-800);
   border-color: var(--ccc-run-c55);
   animation: ccc-mission-halo-pulse 2400ms ease-in-out infinite;
 }
@@ -787,7 +807,7 @@ body {
   width: 38px;
   height: 30px;
   border-radius: 5px;
-  background: #05050d; /* ink-950 — deeper than the card */
+  background: var(--color-ink-950); /* deeper than the card */
   border: 1px solid var(--ccc-run-c55);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.08),
@@ -798,4 +818,21 @@ body {
   letter-spacing: 0.12em;
   text-shadow: 0 0 8px var(--ccc-run-c55);
   flex-shrink: 0;
+}
+
+/* ---------------------------------------------------------------------------
+ * Reduced motion — accessibility gate (DESIGN.md §4).
+ * Perpetual loops are the bulk of CCC's motion; honor the user's OS setting by
+ * collapsing all animations/transitions to their resting frame. Discrete state
+ * (a done check, an error bar) still reads; nothing perpetually moves.
+ * ------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
