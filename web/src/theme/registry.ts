@@ -12,6 +12,16 @@
 
 import type { Phase } from '../types';
 
+/** Robot (per-project) color treatment for a theme. The project hue is hashed
+ *  from the slug; `hueRange` remaps it into the theme's band so robots stay
+ *  distinguishable per project while fitting the palette. Omit `hueRange` for
+ *  the full spectrum (neon-noir). */
+export interface RobotColor {
+  sat: number;
+  light: number;
+  hueRange?: [number, number];
+}
+
 export interface Theme {
   id: string;
   name: string;
@@ -20,6 +30,8 @@ export interface Theme {
   vars: Record<string, string>;
   /** Per-phase room/robot hex (alpha suffixes appended by consumers). */
   phaseHex: Record<Phase, string>;
+  /** Per-project robot color treatment. */
+  robot: RobotColor;
 }
 
 /** Shared motion tokens — the existing curves, promoted to named tokens. */
@@ -64,6 +76,8 @@ const neonNoir: Theme = {
     TEST: '#39ff14',
     DEPLOY: '#ff1e6b',
   },
+  // Full vivid spectrum — every project a distinct neon hue.
+  robot: { sat: 90, light: 65 },
 };
 
 // ---------------------------------------------------------------------------
@@ -102,6 +116,8 @@ const amberCrt: Theme = {
     TEST: '#aaff66',
     DEPLOY: '#ff7b00',
   },
+  // Amber/gold phosphor band — projects vary within warm amber.
+  robot: { sat: 82, light: 58, hueRange: [28, 52] },
 };
 
 // ---------------------------------------------------------------------------
@@ -143,6 +159,8 @@ const clay: Theme = {
     TEST: '#9ac45a',
     DEPLOY: '#e0593f',
   },
+  // Earthy terracotta→ochre band, desaturated to sit on the warm dusk.
+  robot: { sat: 50, light: 60, hueRange: [14, 46] },
 };
 
 export const THEMES: Theme[] = [neonNoir, amberCrt, clay];
