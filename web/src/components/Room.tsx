@@ -1,4 +1,5 @@
-import { PHASE_HEX, ROOM_BY_PHASE, type AgentState, type Phase } from '../types';
+import { ROOM_BY_PHASE, type AgentState, type Phase } from '../types';
+import { useTheme } from '../theme/ThemeProvider';
 import { RoomGlyph } from './RoomGlyph';
 import { SceneHost } from './scenes/SceneHost';
 
@@ -10,7 +11,8 @@ interface Props {
 const MAX_VISIBLE = 4;
 
 export function Room({ phase, agents }: Props) {
-  const color = PHASE_HEX[phase];
+  const { phaseHex } = useTheme();
+  const color = phaseHex[phase];
   // Lamps / border glow track *live* work only. Resting agents (done/idle)
   // stay visible as a record, but the room visibly powers down once nobody's
   // actively doing anything here.

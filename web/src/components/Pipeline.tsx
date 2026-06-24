@@ -1,10 +1,12 @@
-import { PHASES, PHASE_HEX, type AgentState, type Phase } from '../types';
+import { PHASES, type AgentState, type Phase } from '../types';
+import { useTheme } from '../theme/ThemeProvider';
 
 interface Props {
   agents: Record<string, AgentState>;
 }
 
 export function Pipeline({ agents }: Props) {
+  const { phaseHex } = useTheme();
   const activePhase = dominantPhase(agents);
   const activeIdx = PHASES.indexOf(activePhase);
 
@@ -16,7 +18,7 @@ export function Pipeline({ agents }: Props) {
         const done = idx < activeIdx;
         const active = idx === activeIdx;
         const pending = idx > activeIdx;
-        const color = PHASE_HEX[phase];
+        const color = phaseHex[phase];
 
         return (
           <div key={phase} className="flex items-center flex-1">
@@ -47,7 +49,7 @@ export function Pipeline({ agents }: Props) {
                 className="h-px flex-shrink-0 w-6 mx-1"
                 style={{
                   background: done
-                    ? `linear-gradient(90deg, ${color}, ${PHASE_HEX[PHASES[idx + 1]!]})`
+                    ? `linear-gradient(90deg, ${color}, ${phaseHex[PHASES[idx + 1]!]})`
                     : 'rgba(255,255,255,0.12)',
                   boxShadow: done ? `0 0 6px ${color}` : 'none',
                 }}
