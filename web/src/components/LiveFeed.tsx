@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { LogLine } from '../types';
-import { ProjectChip, projectColor } from './ProjectChip';
+import { ProjectChip, useProjectColor } from './ProjectChip';
 
 interface Props {
   lines: readonly LogLine[];
@@ -26,6 +26,7 @@ export function LiveFeed({
   onToggleCollapsed,
   onResize,
 }: Props) {
+  const projectColor = useProjectColor();
   // Drag-to-resize handle. We pin the grab offset so the right edge stays put.
   const dragging = useRef(false);
   const startX = useRef(0);

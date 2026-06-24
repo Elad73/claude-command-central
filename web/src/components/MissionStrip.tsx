@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import type { AgentState, ProjectMission } from '../types';
-import { projectColor, projectShortCode } from './ProjectChip';
+import { useProjectColor, projectShortCode } from './ProjectChip';
 
 interface Props {
   missions: Record<string, ProjectMission>;
@@ -123,6 +123,7 @@ function MissionCard({
   counts: { total: number; live: number };
   celebratedRef: React.MutableRefObject<Set<string>>;
 }) {
+  const projectColor = useProjectColor();
   const color = projectColor(mission.project);
   const code = projectShortCode(mission.project);
   const done = mission.status === 'done';

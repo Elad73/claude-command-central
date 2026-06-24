@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import type { AgentState } from '../../types';
 import { AgentSprite } from '../AgentSprite';
-import { projectColor } from '../ProjectChip';
+import { useProjectColor } from '../ProjectChip';
 import { AgentLabel } from './AgentLabel';
 import { isResting, type SceneProps } from './types';
 import { Atmosphere } from './Atmosphere';
@@ -104,6 +104,7 @@ interface DeskProps {
  * and an overlaid desk `<svg>`.
  */
 function PlanningDesk({ agent, accent, size }: DeskProps) {
+  const projectColor = useProjectColor();
   const agentColor = projectColor(agent.project);
   const resting = isResting(agent.status);
 

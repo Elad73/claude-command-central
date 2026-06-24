@@ -1,7 +1,7 @@
 import { AnimatePresence, motion, useAnimationControls } from 'framer-motion';
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { AgentSprite } from '../AgentSprite';
-import { projectColor } from '../ProjectChip';
+import { useProjectColor } from '../ProjectChip';
 import { AgentLabel } from './AgentLabel';
 import { isResting, type SceneProps } from './types';
 import { Atmosphere } from './Atmosphere';
@@ -364,6 +364,7 @@ function Lane({
   index: number;
   color: string;
 }) {
+  const projectColor = useProjectColor();
   const agentColor = projectColor(agent.project);
   const resting = isResting(agent.status);
   const delayMs = index * STAGGER_MS;
