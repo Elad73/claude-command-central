@@ -2,6 +2,17 @@
 
 Live mission-control dashboard for Claude Code sessions.
 
+![CCC — a busy command center with all six phase rooms staffed by working agents](docs/screenshots/01-command-center-busy.png)
+
+> Six theatrical rooms, one per workflow phase. Agents appear, walk, build, review, stunt-fall, and launch as your Claude Code sessions progress — in real time.
+
+<details>
+<summary>More views</summary>
+
+![Multiple missions in flight across projects](docs/screenshots/02-missions-in-flight.png)
+
+</details>
+
 ---
 
 ## What is this?
@@ -11,6 +22,17 @@ Claude Command Central (`ccc`) is a real-time observability dashboard for agenti
 It exists because Claude Code routinely spawns parallel subagents across multiple projects, and watching a stream of raw tool calls gives you no spatial sense of where the work is or how far along it is. CCC converts that invisible execution into a glanceable operational view: which agents are active, which room they are working in right now, and what the overall mission progress looks like.
 
 The dashboard runs entirely on your local machine, reads append-only JSONL feed files, and never writes back to the project it is observing.
+
+---
+
+## Themes
+
+CCC ships **switchable visual themes** — pick one from the top bar; your choice persists. See [`DESIGN.md`](DESIGN.md) for the theme architecture.
+
+| Neon Noir *(default)* | Amber CRT | Clay |
+| :---: | :---: | :---: |
+| ![Neon Noir theme](docs/screenshots/themes/neon-noir.png) | ![Amber CRT theme](docs/screenshots/themes/amber-crt.png) | ![Clay theme](docs/screenshots/themes/clay.png) |
+| Cyberpunk control room | Retro phosphor terminal | Warm terracotta dusk |
 
 ---
 
