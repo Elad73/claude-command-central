@@ -450,13 +450,16 @@ body {
  * BUILD scene loops — one keyframe set per tool (hammer / saw / drill / paint)
  * ------------------------------------------------------------------------- */
 
-/* Hammer: wind up above head, swing down (strike), recoil. ~700ms cycle. */
+/* Hammer (held head-down, pivot at the hand): rest on the nail, wind up back,
+ * strike down. ~700ms cycle. rotate 0deg = head straight down on the nail. */
 @keyframes build-hammer-swing {
-  0%   { transform: rotate(-55deg) translateY(-4px); }
-  35%  { transform: rotate(-65deg) translateY(-6px); }
-  55%  { transform: rotate(10deg)  translateY(4px); }
-  70%  { transform: rotate(-10deg) translateY(0); }
-  100% { transform: rotate(-55deg) translateY(-4px); }
+  0%, 10% { transform: rotate(2deg); }    /* resting on the nail after a strike */
+  22%     { transform: rotate(-15deg); }  /* lift off */
+  46%     { transform: rotate(-74deg); }  /* wound up — head swung up and back */
+  52%     { transform: rotate(-74deg); }
+  68%     { transform: rotate(8deg); }    /* STRIKE down onto the nail (overshoot) */
+  80%     { transform: rotate(0deg); }    /* settle on the nail */
+  100%    { transform: rotate(2deg); }
 }
 
 /* Nail sinks 2px per strike; resets on the 4th. Total = 4 × hammer cycle (2.8s). */
