@@ -383,25 +383,28 @@ function ToolInHand({ tool, color, playState, size }: ToolProps) {
   const handY = spriteH * 0.72;
 
   if (tool === 'hammer') {
+    // Held HEAD-DOWN, pivoting at the hand (top), so it winds up and strikes
+    // *down* onto the nail on the plank — instead of a head-up hammer that
+    // floats above the work. Length reaches from the hand to the plank.
     return (
       <div
         className="absolute"
         style={{
-          left: handX - 6,
-          top: handY - 30,
-          width: 24,
-          height: 44,
-          transformOrigin: '12px 38px',
+          left: handX - 8,
+          top: handY - 2,
+          width: 16,
+          height: 30,
+          transformOrigin: '8px 2px', // pivot at the hand (top of the shaft)
           animation: 'build-hammer-swing 0.7s ease-in-out infinite',
           animationPlayState: playState,
         }}
       >
-        <svg width={24} height={44} viewBox="0 0 24 44" style={{ overflow: 'visible' }}>
-          {/* shaft */}
-          <rect x={10} y={10} width={4} height={30} rx={1} fill={color} stroke={color} strokeWidth={0.8} />
-          {/* head */}
-          <rect x={2} y={2} width={20} height={10} rx={1} fill={color} stroke={color} strokeWidth={1} />
-          <rect x={4} y={4} width={4} height={6} fill="#000" opacity={0.3} />
+        <svg width={16} height={30} viewBox="0 0 16 30" style={{ overflow: 'visible' }}>
+          {/* shaft from the hand down */}
+          <rect x={6} y={0} width={4} height={22} rx={1} fill={color} stroke={color} strokeWidth={0.8} />
+          {/* striking head at the bottom */}
+          <rect x={1} y={19} width={14} height={9} rx={1.5} fill={color} stroke={color} strokeWidth={1} />
+          <rect x={2} y={21} width={3} height={5} fill="#000" opacity={0.3} />
         </svg>
       </div>
     );
@@ -536,16 +539,17 @@ function Target({ tool, color, playState, size }: TargetProps) {
         />
         {/* wood grain */}
         <line x1={width * 0.12} y1={10} x2={width * 0.88} y2={10} stroke={color} strokeWidth={0.6} opacity={0.4} />
-        {/* nail — animated: bob "down" once per strike */}
+        {/* nail — directly under the hammer head (agent's hand side), straight
+            and a touch larger so it reads; sinks a step per strike. */}
         <g
           style={{
-            transformOrigin: `${width * 0.5}px 6px`,
+            transformOrigin: `${width * 0.62}px 6px`,
             animation: 'build-nail-sink 2.8s steps(1, end) infinite',
             animationPlayState: playState,
           }}
         >
-          <line x1={width * 0.5} y1={-2} x2={width * 0.5} y2={6} stroke={color} strokeWidth={1.6} />
-          <circle cx={width * 0.5} cy={-2} r={1.8} fill={color} />
+          <line x1={width * 0.62} y1={-5} x2={width * 0.62} y2={6} stroke={color} strokeWidth={2} strokeLinecap="round" />
+          <circle cx={width * 0.62} cy={-5} r={2.2} fill={color} />
         </g>
       </svg>
     );
