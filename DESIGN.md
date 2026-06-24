@@ -5,10 +5,10 @@
 > changes should conform to this document; when they diverge, fix the code or
 > update this doc in the same change.
 
-CCC's goal as an open-source project is to be **delightful enough that people star
-it from the README alone**. The product *is* the visuals — the robots, the office,
-the motion. So design is not decoration here; it is the core feature, and it is
-held to a correspondingly high bar.
+CCC's goal as an open-source project is to be **genuinely delightful and clear at a
+glance**. The product *is* the visuals — the robots, the office, the motion. So
+design is not decoration here; it is the core feature, and it is held to a
+correspondingly high bar.
 
 ---
 
@@ -77,8 +77,8 @@ tier 3  motion           --ccc-ease-contact, --ccc-ease-settle, --ccc-ease-ambie
 ## 3. Theme architecture (the headline feature)
 
 CCC ships **multiple switchable visual styles**, selectable at runtime and
-persisted to `localStorage`. This is both a design-quality win and a
-star-driver ("…wait, it has skins?").
+persisted to `localStorage`. This is a design-quality win and a genuinely fun
+feature ("…wait, it has skins?").
 
 ### Mechanics
 
@@ -176,29 +176,27 @@ the *structural* one.
 
 ---
 
-## 7. The path to stars (how design work pays off)
+## 7. From design to a usable example (how the work pays off)
 
-Design quality only earns stars once it's *captured and trivially tryable*. Order:
+Design quality only lands once it's *captured and trivially tryable*. Order:
 
 1. **Theme architecture + elevated `neon-noir`** — the switchable-skins feature.
 2. **Second + third themes** (`amber-crt`, `clay`) — proves the system, gives the
    "it has skins!" hook.
 3. **Hero artifact** — a looping GIF/MP4 at the top of the README of a full mission
-   flowing PROMPT→DEPLOY, plus a theme-switch beauty shot. This converts more stars
-   than any code.
+   flowing PROMPT→DEPLOY, plus a theme-switch beauty shot. This communicates the
+   project faster than any code.
 4. **Zero-friction try** — one-command demo (`npx … demo`) and ideally a live web
    deploy people can click.
 5. **Repo polish** — README hook, screenshots (✅ started in `docs/screenshots/`),
    license, topics, tagline.
-6. **Distribution** — Show HN, r/commandline, the `awesome-claude-*` lists — only
-   once 1–4 genuinely impress.
 
 ---
 
 ## Status
 
 - ✅ Philosophy, token-tier plan, theme set, and motion system specified (this doc).
-- ✅ Showcase screenshots captured (`docs/screenshots/`).
+- ✅ Screenshots captured (`docs/screenshots/`).
 - ✅ Token consolidation — single source of truth in `web/src/theme/registry.ts`;
   Tailwind `--color-*` overridden at runtime; `phaseHex` fed via context.
 - ✅ Theme registry + `ThemeProvider` + TopBar switcher (persists to localStorage).
