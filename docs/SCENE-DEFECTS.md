@@ -50,9 +50,10 @@ Status: ✅ fixed & verified · 🔧 in progress · ⬜ todo
 
 - ⬜ **Robots are underweighted & a bit generic.** Small relative to rooms;
   silhouette and "what am I doing" pose could be stronger and more characterful.
-- 🔧 **Theme-aware robot color.** Robots use `projectColor()` (a fixed HSL hash) so
-  they stay vivid regardless of theme. Should adapt per theme (lightness/saturation
-  bounds) so they sit naturally in `clay` etc.
+- ✅ **Theme-aware robot color (PR #9).** `projectColor()` now takes per-theme
+  params and a `useProjectColor()` hook remaps the hashed hue into each theme's
+  band — vivid in neon-noir, amber/gold in amber-crt, earthy in clay. Verified
+  across all three themes. Projects stay distinguishable within a theme.
 
 ## Office / backgrounds
 
@@ -72,3 +73,15 @@ Status: ✅ fixed & verified · 🔧 in progress · ⬜ todo
 - ⬜ True *light* mode (if still wanted) needs a per-scene lighting pass: gate the
   volumetric washes / drop-shadow glows / text-shadows behind a theme flag and
   darken robots — a dedicated effort, not a palette swap.
+
+---
+
+## Runtime / state (found in live use)
+
+- ⬜ **Ghost agents from un-closed sessions.** Sessions that crash without `Stop`,
+  or subagents without `SubagentStop`, linger as "active" forever — `serve` rebuilds
+  all feed history on load and the despawn GC doesn't evict month-old state. Make the
+  GC evict agents whose newest event is older than a threshold at load time. See
+  `K-PIT-004`. (Surfaced live: stale `harmonitabs-single` + `personal-space` figures.)
+- ⬜ **`<circle> r: undefined` console error** from a framer-motion animated circle
+  (reactor core / star). Pre-existing; clamp the radius value. Cosmetic but noisy.

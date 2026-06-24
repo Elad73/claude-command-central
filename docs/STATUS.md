@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: 2026-06-24 (runtime theme system + screenshots + scene defect fixes)
+Last updated: 2026-06-24 (theming pass merged: theme system, scene fixes, hammer/nail, theme-aware robot color)
 
 ## ⚓ Rollback baseline — `v0.1.1`
 
@@ -24,16 +24,21 @@ preview again.
 
 ## Current Phase
 
-**Design / theming pass — on branch `feat/runtime-theming` (PR #7).**
-Adds a runtime theme system (3 switchable, persisted themes: neon-noir, amber-crt,
-clay) as a single source of truth, screenshots + README gallery, and
-scene-defect fixes: Sherlock hat attached to the head, build-bay header no longer
-occluded by the tool rack, clay reworked to a readable warm-dark theme, and the
-**QA-lab stunt-fall redesigned to be readable** (upright feet-first landing into an
-enlarged crash mat; fixed a `translateY(calc(100% - ..))` bug that collapsed the
-fall distance — verified by sampling the sprite's feet). Remaining defects tracked
-in `docs/SCENE-DEFECTS.md` (build hammer/nail geometry, theme-aware robot color,
-per-room set dressing). Typecheck clean; tests 131/131.
+**Design / theming pass — merged to `main` (PRs #7, #8, #9).**
+Shipped: a runtime theme system (3 switchable, persisted themes neon-noir / amber-crt
+/ clay) as a single source of truth + top-bar switcher + `prefers-reduced-motion`;
+screenshots + README gallery; and verified scene fixes — Sherlock hat attached to the
+head, build-bay header no longer occluded by the tool rack, clay reworked to a
+readable warm-dark "terracotta dusk", QA-lab stunt-fall redesigned (upright feet-first
+landing into an enlarged crash mat; fixed a `translateY(%)` fall-distance bug), the
+build-bay hammer now strikes down onto the nail, and **theme-aware robot color** (hues
+remapped into each theme's band). Every visual change browser-verified before commit.
+
+Workflow now: one small branch per batch → PR → merge. Remaining design work in
+`docs/SCENE-DEFECTS.md`: per-room set dressing, robot sprite quality, and two bugs
+found in live use — ghost agents from un-closed sessions (`K-PIT-004`) and a
+framer-motion `<circle> r` console error. Live single-port server (`node dist/bin.js
+serve`) runs on :7777 watching the registry feeds. Typecheck clean; tests 131/131.
 
 > Re-learned the post-Rive lesson the hard way: the clay theme was first committed
 > after a single glance and shipped unreadable. Now re-verifying every visual change
@@ -46,7 +51,7 @@ Background: the dashboard is a TypeScript + Ink + React (web) stack tailing
 Claude Code hook events from multiple projects simultaneously. Repo is
 clone-and-activate ready: README, LICENSE, PRD, SECURITY, CONTRIBUTING all in
 place, project-level skills + agent pointers + slash commands ship in
-`.claude/`. Four projects currently wired into the registry.
+`.claude/`. Six projects currently wired into the registry.
 
 ## What's running
 
