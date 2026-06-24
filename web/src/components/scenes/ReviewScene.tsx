@@ -466,7 +466,10 @@ function SeatedAgent({
         />
       </div>
 
-      {/* Overlays above the chair: hat, magnifier+paper, pipe+smoke */}
+      {/* Overlays above the chair: magnifier+paper, pipe+smoke.
+          The wrapper carries review-nod and the inner svg carries body-scan —
+          the SAME pair the seated sprite uses — so these hand/mouth props stay
+          locked to the sprite as its head scans side to side. */}
       <div
         className="absolute pointer-events-none"
         style={{
@@ -475,6 +478,9 @@ function SeatedAgent({
           width: spriteDims.w,
           height: spriteDims.h,
           zIndex: 5,
+          transformOrigin: 'center bottom',
+          animation: 'review-nod 4s ease-in-out infinite',
+          animationPlayState: loopState,
         }}
         aria-hidden
       >
@@ -482,57 +488,22 @@ function SeatedAgent({
           viewBox="0 0 120 180"
           width="100%"
           height="100%"
-          style={{ overflow: 'visible' }}
+          style={{
+            overflow: 'visible',
+            transformOrigin: 'center bottom',
+            animation: 'body-scan 3s ease-in-out infinite',
+            animationPlayState: loopState,
+          }}
         >
           <defs>
             <clipPath id={lensClipId}>
               <circle cx={26} cy={96} r={10.5} />
             </clipPath>
           </defs>
-          {/* ============== DEERSTALKER HAT ============== */}
-          {/* Hat sits on top of the helmet. Two peaks (front/back) + ear flaps. */}
-          <g style={{ transformOrigin: '60px 18px' }}>
-            {/* Ear flaps (behind) */}
-            <path
-              d="M 38 18 Q 34 26 38 36 Q 44 38 46 30 L 46 22 Z"
-              fill="#6b4a2a"
-              stroke="#2a1a10"
-              strokeWidth={1}
-            />
-            <path
-              d="M 82 18 Q 86 26 82 36 Q 76 38 74 30 L 74 22 Z"
-              fill="#6b4a2a"
-              stroke="#2a1a10"
-              strokeWidth={1}
-            />
-            {/* Brim — front & back peaks */}
-            <path
-              d="M 32 22 L 42 10 Q 60 2 78 10 L 88 22 Q 76 26 60 26 Q 44 26 32 22 Z"
-              fill="#7a5530"
-              stroke="#2a1a10"
-              strokeWidth={1.2}
-            />
-            {/* Front peak */}
-            <path
-              d="M 48 10 L 60 2 L 72 10 L 66 12 L 60 8 L 54 12 Z"
-              fill="#8a6238"
-              stroke="#2a1a10"
-              strokeWidth={0.8}
-            />
-            {/* Crown — with tartan check hint */}
-            <path
-              d="M 44 6 Q 60 -6 76 6 L 78 20 Q 60 22 42 20 Z"
-              fill="#7a5530"
-              stroke="#2a1a10"
-              strokeWidth={1.2}
-            />
-            <line x1={48} y1={4} x2={72} y2={4} stroke="#2a1a10" strokeWidth={0.6} opacity={0.6} />
-            <line x1={46} y1={10} x2={74} y2={10} stroke="#2a1a10" strokeWidth={0.6} opacity={0.6} />
-            <line x1={54} y1={0} x2={54} y2={18} stroke="#2a1a10" strokeWidth={0.6} opacity={0.6} />
-            <line x1={66} y1={0} x2={66} y2={18} stroke="#2a1a10" strokeWidth={0.6} opacity={0.6} />
-            {/* Chin tie bow on top */}
-            <circle cx={60} cy={5} r={1.8} fill="#3a2818" />
-          </g>
+          {/* Deerstalker hat now lives inside AgentSprite's head group (gated to
+              phase REVIEW) so it tracks the head/body-scan motion natively.
+              The pipe + magnifier below are synced to that motion by rotating
+              this whole overlay with the same body-scan / nod (see wrappers). */}
 
           {/* ============== PIPE (right hand / mouth) ============== */}
           {/* A curved briar pipe: stem from mouth area, bowl tilted up-right. */}
