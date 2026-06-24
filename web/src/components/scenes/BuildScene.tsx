@@ -137,7 +137,7 @@ function ToolRack({ color }: { color: string }) {
   return (
     <div
       className="absolute left-4 right-4 pointer-events-none"
-      style={{ top: 6, height: 72 }}
+      style={{ top: 30, height: 52 }}
     >
       {/* Rack board */}
       <div
