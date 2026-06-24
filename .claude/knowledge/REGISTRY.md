@@ -12,6 +12,7 @@ Categories: **PAT** patterns · **PIT** pitfalls · **DEC** decisions · **PRF**
 - K-PAT-001 [2026-04-27] Motion (not static glow) for "this card is active" emphasis — `patterns/K-PAT-001-motion-beats-static-for-active-card.md`
 
 ## Pitfalls
+- K-PIT-004 [2026-06-24] Ghost agents/missions linger from un-closed sessions — serve rebuilds all history on load; despawn GC misses month-old state — `pitfalls/K-PIT-004-ghost-agents-from-unclosed-sessions.md`
 - K-PIT-003 [2026-06-23] `translateY(%)` resolves against the element's own size, not the parent — collapses lane-relative travel — `pitfalls/K-PIT-003-translatey-percent-resolves-against-own-size.md`
 - K-PIT-002 [2026-04-27] `npm run build:web` does not stage the bundle for `ccc serve` (missing `copy:web` step) — `pitfalls/K-PIT-002-web-build-without-copy-web-stage.md`
 - K-PIT-001 [2026-04-27] Renaming `CLAUDE_CONFIG_DIR` strips per-project sessions and auto-memory — `pitfalls/K-PIT-001-claude-config-dir-migration.md`
