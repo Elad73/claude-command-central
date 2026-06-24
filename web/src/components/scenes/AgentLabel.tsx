@@ -1,6 +1,6 @@
 import type { AgentState } from '../../types';
 import { displayName } from '../../types';
-import { ProjectChip, projectColor } from '../ProjectChip';
+import { ProjectChip, useProjectColor } from '../ProjectChip';
 
 interface Props {
   agent: AgentState;
@@ -13,6 +13,7 @@ interface Props {
  * Shows: name + tiny status dot + short project chip. Dims when resting.
  */
 export function AgentLabel({ agent, align = 'below' }: Props) {
+  const projectColor = useProjectColor();
   const col = projectColor(agent.project);
   const resting = agent.status === 'done' || agent.status === 'idle';
   const errored = agent.status === 'blocked' || agent.status === 'error';

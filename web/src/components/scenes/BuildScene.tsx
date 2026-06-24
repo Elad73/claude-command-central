@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import type { CSSProperties, ReactNode } from 'react';
 import { AgentSprite } from '../AgentSprite';
-import { projectColor } from '../ProjectChip';
+import { useProjectColor } from '../ProjectChip';
 import { AgentLabel } from './AgentLabel';
 import { isResting, type SceneProps } from './types';
 import { Atmosphere } from './Atmosphere';
@@ -42,6 +42,7 @@ const pickTool = (key: string): ToolId => {
 };
 
 export function BuildScene({ agents, color }: SceneProps) {
+  const projectColor = useProjectColor();
   const stations = agents.slice(0, 4);
   return (
     <>

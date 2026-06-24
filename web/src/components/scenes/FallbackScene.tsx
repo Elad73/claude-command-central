@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { AgentSprite } from '../AgentSprite';
 import { ThoughtBubble } from '../ThoughtBubble';
-import { projectColor } from '../ProjectChip';
+import { useProjectColor } from '../ProjectChip';
 import { AgentLabel } from './AgentLabel';
 import type { SceneProps } from './types';
 
@@ -11,6 +11,7 @@ import type { SceneProps } from './types';
  * A real scene component overrides this for its phase.
  */
 export function FallbackScene({ agents, color }: SceneProps) {
+  const projectColor = useProjectColor();
   if (agents.length === 0) {
     return (
       <div className="absolute inset-0 flex items-center justify-center">
