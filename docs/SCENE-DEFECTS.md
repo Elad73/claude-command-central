@@ -78,10 +78,13 @@ Status: ✅ fixed & verified · 🔧 in progress · ⬜ todo
 
 ## Runtime / state (found in live use)
 
-- ⬜ **Ghost agents from un-closed sessions.** Sessions that crash without `Stop`,
-  or subagents without `SubagentStop`, linger as "active" forever — `serve` rebuilds
-  all feed history on load and the despawn GC doesn't evict month-old state. Make the
-  GC evict agents whose newest event is older than a threshold at load time. See
-  `K-PIT-004`. (Surfaced live: stale `harmonitabs-single` + `personal-space` figures.)
+- ✅ **Ghost agents from un-closed sessions** (`K-PIT-004`, fixed 2026-06-28).
+  Subagents whose `SubagentStop` was dropped (and main agents whose turn died)
+  lingered as "active" forever — the despawn GC only reaped done/idle. Fixed with
+  two mechanisms: (1) a session-end cascade in the reducer — a `flow → done` evicts
+  that project's still-active/blocked agents (`evictWorkingAgents`); (2) a crash
+  backstop — `pruneStale` + client GC now reap active/blocked agents after
+  `ACTIVE_STALE_TTL_MS` (30 min), long enough to keep genuinely long-running tools.
+  (Surfaced live: stale `personal-space` figure; `harmonitabs-single` correctly kept.)
 - ⬜ **`<circle> r: undefined` console error** from a framer-motion animated circle
   (reactor core / star). Pre-existing; clamp the radius value. Cosmetic but noisy.

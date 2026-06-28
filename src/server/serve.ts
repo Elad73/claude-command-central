@@ -11,6 +11,11 @@ import { createStateStore } from './state-store.js';
 import { pruneStale } from '../state/dashboard-reducer.js';
 
 const STALE_TTL_MS = 60_000;
+// Crash backstop for working agents whose session died without a `Stop` event.
+// Long enough not to evict a genuinely long-running tool call; short enough
+// that a truly dead session clears. Clean session ends are handled instantly
+// by the flow→done cascade in the reducer, so this only catches kills/crashes.
+const ACTIVE_STALE_TTL_MS = 30 * 60_000;
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -105,7 +110,7 @@ export async function createServer(options: ServeOptions): Promise<{
   // TTL) pruned view-only for hydration. Lets a refreshed browser pick up the
   // live office without waiting on the next event.
   fastify.get('/api/snapshot', async () =>
-    pruneStale(store.get(), Date.now(), STALE_TTL_MS),
+    pruneStale(store.get(), Date.now(), STALE_TTL_MS, ACTIVE_STALE_TTL_MS),
   );
 
   // Static web app (only if webRoot is provided and exists)
