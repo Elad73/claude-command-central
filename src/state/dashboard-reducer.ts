@@ -86,6 +86,31 @@ export const displayName = (rawName: string): string => {
   return rawName;
 };
 
+/** Agent statuses that mean "currently doing work" (as opposed to resting). */
+const isWorkingStatus = (status: string): boolean =>
+  status === 'active' || status === 'blocked';
+
+/**
+ * Drop every agent of `project` that is still in a working status. Returns the
+ * same reference when nothing changed so the reducer stays cheap and pure.
+ * Used by the session-end cascade to clear orphaned subagents on `flow → done`.
+ */
+const evictWorkingAgents = (
+  agents: Record<string, AgentState>,
+  project: string,
+): Record<string, AgentState> => {
+  let changed = false;
+  const next: Record<string, AgentState> = {};
+  for (const [key, agent] of Object.entries(agents)) {
+    if (agent.project === project && isWorkingStatus(agent.status)) {
+      changed = true;
+      continue;
+    }
+    next[key] = agent;
+  }
+  return changed ? next : agents;
+};
+
 const newAgent = (project: string, rawName: string, now: number): AgentState => ({
   key: keyOf(project, rawName),
   name: displayName(rawName),
@@ -181,6 +206,18 @@ export function reduce(
       nextMission = { ...nextMission, completedAt: now };
     }
     missions = { ...missions, [project]: nextMission };
+    // Session-end cascade: when a project's session stops (flow → done),
+    // evict that project's agents still stuck `active`/`blocked`. These are
+    // orphaned subagents whose `SubagentStop` was dropped (the hook-coverage
+    // gap documented in the ccc-hook-wiring skill) or a main agent whose turn
+    // died mid-flight — the `Stop` hook only marks the *main* agent done, so
+    // without this they linger forever as zombies in their last room. The
+    // main agent's own `done` event (emitted right after this flow event by
+    // the Stop hook) re-creates it as a resting DEPLOY card, which the TTL GC
+    // then reaps; done/idle agents are left untouched here for the same reason.
+    if (event.status === 'done') {
+      agents = evictWorkingAgents(agents, project);
+    }
   } else if (event.type === 'agent') {
     const rawName = event.agent || 'unnamed-agent';
     const key = keyOf(project, rawName);
@@ -237,22 +274,36 @@ export function reduce(
 }
 
 /**
- * Pure view transform: drop agents that are stale (done/idle and older than
- * ttlMs). Does not mutate the input. Used for the `/api/snapshot` response so
- * fresh clients hydrate into a clean office without zombie agents from past
- * sessions.
+ * Pure view transform: drop stale agents. Does not mutate the input. Used for
+ * the `/api/snapshot` response so fresh clients hydrate into a clean office
+ * without zombie agents from past sessions.
+ *
+ * Two TTLs, because the two cases differ:
+ *   • done/idle agents (`doneIdleTtlMs`, ~60s): finished work that lingers
+ *     only briefly as a celebration card.
+ *   • active/blocked agents (`activeTtlMs`, much longer): normally cleared the
+ *     instant their session stops (see the cascade in `reduce`). This TTL is a
+ *     crash backstop for sessions killed without a `Stop` event — long enough
+ *     not to evict a genuinely long-running tool call, short enough that a
+ *     truly dead session eventually clears. When `activeTtlMs` is omitted,
+ *     working agents are never pruned by age (preserves the original behavior).
  */
 export function pruneStale(
   state: DashboardState,
   now: number,
-  ttlMs: number,
+  doneIdleTtlMs: number,
+  activeTtlMs?: number,
 ): DashboardState {
   const pruned: Record<string, AgentState> = {};
   let changed = false;
   for (const [key, agent] of Object.entries(state.agents)) {
+    const age = now - agent.updatedAt;
+    const resting = agent.status === 'done' || agent.status === 'idle';
     const stale =
-      (agent.status === 'done' || agent.status === 'idle') &&
-      now - agent.updatedAt > ttlMs;
+      (resting && age > doneIdleTtlMs) ||
+      (isWorkingStatus(agent.status) &&
+        activeTtlMs !== undefined &&
+        age > activeTtlMs);
     if (stale) {
       changed = true;
       continue;

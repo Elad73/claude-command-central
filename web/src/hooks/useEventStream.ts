@@ -7,9 +7,17 @@ export interface StreamStatus {
   connected: boolean;
 }
 
-/** Stale-agent GC: how often we sweep, and how old a done/idle agent can get. */
+/** Stale-agent GC: how often we sweep, and how old an agent can get. */
 const GC_INTERVAL_MS = 15_000;
+/** done/idle agents: finished work lingering as a brief celebration card. */
 const STALE_TTL_MS = 60_000;
+/**
+ * active/blocked agents: crash backstop only. Clean session ends clear these
+ * instantly via the reducer's flow→done cascade; this evicts agents whose
+ * session was killed without a `Stop`. Long enough not to drop a genuinely
+ * long-running tool call.
+ */
+const ACTIVE_STALE_TTL_MS = 30 * 60_000;
 
 export function useEventStream(url: string = '/events'): {
   state: DashboardState;
@@ -109,9 +117,12 @@ export function useEventStream(url: string = '/events'): {
       setState((prev) => {
         const victims: Array<{ project: string; rawName: string }> = [];
         for (const agent of Object.values(prev.agents)) {
+          const age = now - agent.updatedAt;
+          const resting = agent.status === 'done' || agent.status === 'idle';
+          const working = agent.status === 'active' || agent.status === 'blocked';
           const stale =
-            (agent.status === 'done' || agent.status === 'idle') &&
-            now - agent.updatedAt > STALE_TTL_MS;
+            (resting && age > STALE_TTL_MS) ||
+            (working && age > ACTIVE_STALE_TTL_MS);
           if (stale) victims.push({ project: agent.project, rawName: agent.rawName });
         }
         if (victims.length === 0) return prev;

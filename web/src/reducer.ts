@@ -30,6 +30,32 @@ const appendLog = (
 
 const keyOf = (project: string, rawName: string): string => `${project}::${rawName}`;
 
+/** Agent statuses that mean "currently doing work" (as opposed to resting). */
+const isWorkingStatus = (status: string): boolean =>
+  status === 'active' || status === 'blocked';
+
+/**
+ * Drop every agent of `project` still in a working status. Returns the same
+ * reference when nothing changed. Used by the session-end cascade to clear
+ * orphaned subagents (dropped `SubagentStop`) on `flow → done`. Mirror of the
+ * server reducer's helper — keep both in sync.
+ */
+const evictWorkingAgents = (
+  agents: Record<string, AgentState>,
+  project: string,
+): Record<string, AgentState> => {
+  let changed = false;
+  const next: Record<string, AgentState> = {};
+  for (const [key, agent] of Object.entries(agents)) {
+    if (agent.project === project && isWorkingStatus(agent.status)) {
+      changed = true;
+      continue;
+    }
+    next[key] = agent;
+  }
+  return changed ? next : agents;
+};
+
 const newAgent = (project: string, rawName: string, now: number): AgentState => ({
   key: keyOf(project, rawName),
   name: displayName(rawName),
@@ -102,6 +128,14 @@ export function reduce(
       nextMission = { ...nextMission, completedAt: now };
     }
     missions = { ...missions, [project]: nextMission };
+    // Session-end cascade: when a project's session stops (flow → done),
+    // evict that project's agents still stuck `active`/`blocked` — orphaned
+    // subagents whose `SubagentStop` was dropped, or a main agent whose turn
+    // died mid-flight. The Stop hook only marks the *main* agent done, so
+    // without this they linger as zombies. Mirror of the server reducer.
+    if (event.status === 'done') {
+      agents = evictWorkingAgents(agents, project);
+    }
   } else if (event.type === 'agent') {
     const rawName = event.agent || 'unnamed-agent';
     const key = keyOf(project, rawName);
